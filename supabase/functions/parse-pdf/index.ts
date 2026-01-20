@@ -1,0 +1,182 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { pdfBase64, extractionType } = await req.json();
+
+    if (!pdfBase64) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'No PDF data provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const apiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!apiKey) {
+      console.error('LOVABLE_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ success: false, error: 'AI gateway not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let extractionPrompt = '';
+    
+    switch (extractionType) {
+      case 'asset_details':
+        extractionPrompt = `Analyze this PDF document and extract asset/vehicle/watercraft details. Return a JSON object with these fields (use empty string if not found):
+{
+  "hull": {
+    "make": "",
+    "model": "",
+    "series": "",
+    "registration": "",
+    "registrationExpiry": "",
+    "buildDate": "",
+    "hin": "",
+    "colour": ""
+  },
+  "trailer": {
+    "make": "",
+    "model": "",
+    "series": "",
+    "registration": "",
+    "registrationExpiry": "",
+    "buildDate": ""
+  },
+  "motor": {
+    "make": "",
+    "model": "",
+    "series": "",
+    "engineSize": "",
+    "buildDate": "",
+    "engineNumber": ""
+  }
+}
+Only return the JSON object, no other text.`;
+        break;
+      
+      case 'bank_account':
+        extractionPrompt = `Analyze this PDF document which contains proof of a bank account. Extract the banking details. Return a JSON object with these fields (use empty string if not found):
+{
+  "accountName": "",
+  "bsbNumber": "",
+  "accountNumber": "",
+  "bank": ""
+}
+Only return the JSON object, no other text.`;
+        break;
+      
+      case 'payout_letter_bank':
+        extractionPrompt = `Analyze this PDF document which is a payout letter from a financier. Extract the bank account details for payout. Return a JSON object with these fields (use empty string if not found):
+{
+  "accountName": "",
+  "bsbNumber": "",
+  "accountNumber": "",
+  "bank": "",
+  "payoutAmount": ""
+}
+Only return the JSON object, no other text.`;
+        break;
+      
+      case 'payout_letter_bpay':
+        extractionPrompt = `Analyze this PDF document which is a payout letter with BPAY details. Extract the BPAY information. Return a JSON object with these fields (use empty string if not found):
+{
+  "accountName": "",
+  "billerCode": "",
+  "referenceNumber": "",
+  "bank": "",
+  "payoutAmount": ""
+}
+Only return the JSON object, no other text.`;
+        break;
+      
+      default:
+        return new Response(
+          JSON.stringify({ success: false, error: 'Invalid extraction type' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+    }
+
+    console.log(`Processing PDF for extraction type: ${extractionType}`);
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: extractionPrompt
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:application/pdf;base64,${pdfBase64}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 2000,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('AI Gateway error:', errorText);
+      return new Response(
+        JSON.stringify({ success: false, error: `AI processing failed: ${response.status}` }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const aiResponse = await response.json();
+    const content = aiResponse.choices?.[0]?.message?.content || '';
+    
+    console.log('AI Response:', content);
+
+    // Parse the JSON from the response
+    let extractedData;
+    try {
+      // Try to extract JSON from the response (handle markdown code blocks)
+      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
+      const jsonStr = jsonMatch[1].trim();
+      extractedData = JSON.parse(jsonStr);
+    } catch (parseError) {
+      console.error('Failed to parse AI response as JSON:', parseError);
+      // Return raw content if parsing fails
+      extractedData = { raw: content };
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, data: extractedData }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Error processing PDF:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to process PDF';
+    return new Response(
+      JSON.stringify({ success: false, error: errorMessage }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

@@ -8,7 +8,6 @@ import { InvoiceDetailsSection } from './InvoiceDetailsSection';
 import { DisbursementSection } from './DisbursementSection';
 import { VendorDetailsSection } from './VendorDetailsSection';
 import { LoanTypeSelector, LoanType } from './LoanTypeSelector';
-import { generatePdf } from '@/lib/pdfGenerator';
 import { useToast } from '@/hooks/use-toast';
 
 const loanTypeConfig: Record<LoanType, { title: string; icon: React.ReactNode; description: string }> = {
@@ -41,23 +40,10 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
-    try {
-      await generatePdf(formData, loanType);
-      
-      const loanTypeLabel = loanType === 'boat' ? 'Watercraft' : loanType === 'commercial' ? 'Commercial' : 'Consumer';
-      
-      toast({
-        title: 'Invoice Generated',
-        description: `The ${loanTypeLabel} Vendor Tax Invoice has been downloaded.`,
-      });
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to generate the PDF. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: 'Feature Coming Soon',
+      description: 'PDF generation is being rebuilt. Please check back shortly.',
+    });
   };
 
   const handleReset = () => {

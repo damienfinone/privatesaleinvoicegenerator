@@ -1,6 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { Coordinate } from '@/lib/coordinateConfig';
-import { PDF_WIDTH, PDF_HEIGHT } from '@/lib/coordinateConfig';
 import { cn } from '@/lib/utils';
 
 interface PdfViewerProps {
@@ -9,6 +8,7 @@ interface PdfViewerProps {
   error: string | null;
   coordinates: Record<string, Coordinate>;
   selectedField: string | null;
+  pdfDimensions: { width: number; height: number };
   onCoordinateClick: (x: number, y: number, pdfY: number) => void;
   onMouseMove: (x: number | null, y: number | null, pdfY: number | null, scale: number) => void;
 }
@@ -19,13 +19,17 @@ export function PdfViewer({
   error,
   coordinates,
   selectedField,
+  pdfDimensions,
   onCoordinateClick,
   onMouseMove,
 }: PdfViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const [scale, setScale] = useState(1);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  const PDF_WIDTH = pdfDimensions.width;
+  const PDF_HEIGHT = pdfDimensions.height;
 
   // Calculate scale based on container size
   useEffect(() => {
@@ -49,7 +53,7 @@ export function PdfViewer({
     updateSize();
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
-  }, []);
+  }, [PDF_WIDTH, PDF_HEIGHT]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -82,7 +86,7 @@ export function PdfViewer({
     } else {
       onMouseMove(null, null, null, scale);
     }
-  }, [scale, onMouseMove]);
+  }, [scale, onMouseMove, PDF_WIDTH, PDF_HEIGHT]);
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || !selectedField) return;
@@ -109,7 +113,7 @@ export function PdfViewer({
       
       onCoordinateClick(pdfX, pdfYFromTop, pdfY);
     }
-  }, [scale, selectedField, onCoordinateClick]);
+  }, [scale, selectedField, onCoordinateClick, PDF_WIDTH, PDF_HEIGHT]);
 
   const handleMouseLeave = useCallback(() => {
     onMouseMove(null, null, null, scale);
@@ -154,17 +158,17 @@ export function PdfViewer({
     >
       {pdfUrl && (
         <>
-          <iframe
-            ref={iframeRef}
-            src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-            className="absolute border-0 shadow-lg rounded-md pointer-events-none"
+          <img
+            ref={imageRef}
+            src={pdfUrl}
+            alt="PDF Template"
+            className="absolute shadow-lg rounded-md pointer-events-none"
             style={{
               width: pdfDisplayWidth,
               height: pdfDisplayHeight,
               left: offsetX,
               top: offsetY,
             }}
-            title="PDF Template"
           />
           
           {/* Coordinate markers overlay */}

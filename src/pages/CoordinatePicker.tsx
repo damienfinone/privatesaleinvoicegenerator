@@ -28,7 +28,7 @@ export default function CoordinatePicker() {
     scale: number;
   }>({ x: null, y: null, pdfY: null, scale: 1 });
 
-  const { pdfDataUrl, isLoading, error } = usePdfRenderer(loanType);
+  const { pdfImageUrl, isLoading, error, dimensions } = usePdfRenderer(loanType);
   const fields = getFieldsForTemplate(loanType);
   const currentCoordinates = coordinates[loanType];
 
@@ -131,11 +131,12 @@ export default function CoordinatePicker() {
         <main className="flex-1 flex flex-col">
           <div className="flex-1 p-4">
             <PdfViewer
-              pdfUrl={pdfDataUrl}
+              pdfUrl={pdfImageUrl}
               isLoading={isLoading}
               error={error}
               coordinates={currentCoordinates}
               selectedField={selectedField}
+              pdfDimensions={dimensions}
               onCoordinateClick={handleCoordinateClick}
               onMouseMove={handleMouseMove}
             />

@@ -1,17 +1,21 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { LoanType } from '@/components/private-sale/LoanTypeSelector';
-import { TEMPLATE_PATHS, PDF_HEIGHT } from '@/lib/coordinateConfig';
+import { TEMPLATE_PATHS } from '@/lib/coordinateConfig';
 
-// Set the worker source
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.0.379/pdf.worker.min.js`;
+// Set the worker source for pdfjs-dist v3
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+
+interface Dimensions {
+  width: number;
+  height: number;
+}
 
 export function usePdfRenderer(loanType: LoanType) {
   const [pdfImageUrl, setPdfImageUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dimensions, setDimensions] = useState({ width: 595, height: 842 });
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [dimensions, setDimensions] = useState<Dimensions>({ width: 595, height: 842 });
 
   const renderPdf = useCallback(async () => {
     setIsLoading(true);
@@ -28,7 +32,8 @@ export function usePdfRenderer(loanType: LoanType) {
       const arrayBuffer = await response.arrayBuffer();
       
       // Load the PDF using pdf.js
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
       const page = await pdf.getPage(1);
       
       // Get the viewport at scale 2 for better quality
@@ -57,12 +62,11 @@ export function usePdfRenderer(loanType: LoanType) {
       setPdfImageUrl(imageUrl);
       
       // Store actual PDF dimensions (at scale 1)
-      setDimensions({
-        width: viewport.width / scale,
-        height: viewport.height / scale,
-      });
+      const pdfWidth = viewport.width / scale;
+      const pdfHeight = viewport.height / scale;
+      setDimensions({ width: pdfWidth, height: pdfHeight });
       
-      console.log(`PDF rendered for ${loanType}: ${viewport.width / scale} x ${viewport.height / scale}`);
+      console.log(`PDF rendered for ${loanType}: ${pdfWidth} x ${pdfHeight}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to render PDF');
       console.error('PDF render error:', err);
@@ -73,13 +77,7 @@ export function usePdfRenderer(loanType: LoanType) {
 
   useEffect(() => {
     renderPdf();
-    
-    return () => {
-      if (pdfImageUrl && pdfImageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(pdfImageUrl);
-      }
-    };
-  }, [loanType]);
+  }, [renderPdf]);
 
   return { pdfImageUrl, isLoading, error, dimensions, renderPdf };
 }

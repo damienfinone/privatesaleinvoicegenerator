@@ -28,8 +28,8 @@ export function PdfViewer({
   const [scale, setScale] = useState(1);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
-  const PDF_WIDTH = pdfDimensions.width;
-  const PDF_HEIGHT = pdfDimensions.height;
+  const PDF_WIDTH = pdfDimensions?.width ?? 595;
+  const PDF_HEIGHT = pdfDimensions?.height ?? 842;
 
   // Calculate scale based on container size
   useEffect(() => {

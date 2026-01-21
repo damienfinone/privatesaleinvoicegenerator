@@ -212,6 +212,7 @@ export function PrivateSaleForm() {
             onOpenChange={setPreviewOpen}
             formData={formData}
             loanType={loanType}
+            disbursementType={disbursementType}
           />
         </form>
       )}

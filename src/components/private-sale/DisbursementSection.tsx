@@ -160,8 +160,6 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
         {/* Option 1: Bank Account Details */}
         <div className="space-y-4">
           <h4 className="font-semibold">Option 1: Bank Account Details</h4>
-          <p className="text-sm text-muted-foreground">Upload proof of vendor's nominated bank account</p>
-          
           <UploadButton option="bankAccount" extractionType="bank_account" inputId="bankAccountPdf" description="Upload proof of vendor's nominated bank account (fields below will be auto-populated)" />
           
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

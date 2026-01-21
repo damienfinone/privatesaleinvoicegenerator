@@ -108,11 +108,13 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
   const UploadButton = ({ 
     option, 
     extractionType, 
-    inputId 
+    inputId,
+    description = "Upload PDF to auto-populate"
   }: { 
     option: 'bankAccount' | 'payoutBank' | 'bpay'; 
     extractionType: ExtractionType;
     inputId: string;
+    description?: string;
   }) => (
     <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4">
       <div className="flex items-center gap-4">
@@ -122,7 +124,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
           <Upload className="h-6 w-6 text-muted-foreground flex-shrink-0" />
         )}
         <div className="flex-1">
-          <p className="text-sm font-medium">Upload PDF to auto-populate</p>
+          <p className="text-sm font-medium">{description}</p>
         </div>
         <Label htmlFor={inputId} className="cursor-pointer">
           <Button variant="outline" size="sm" disabled={uploadingOption === option} asChild>
@@ -160,7 +162,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
           <h4 className="font-semibold">Option 1: Bank Account Details</h4>
           <p className="text-sm text-muted-foreground">Upload proof of vendor's nominated bank account</p>
           
-          <UploadButton option="bankAccount" extractionType="bank_account" inputId="bankAccountPdf" />
+          <UploadButton option="bankAccount" extractionType="bank_account" inputId="bankAccountPdf" description="Upload proof of vendor's nominated bank account" />
           
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="space-y-2">

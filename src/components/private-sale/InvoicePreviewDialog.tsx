@@ -47,9 +47,19 @@ function Field({ label, value }: { label: string; value: string }) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mb-3">
-      <div className="text-xs font-bold bg-gray-200 px-2 py-1 border border-gray-400 mb-1">{title}</div>
-      <div className="px-2 text-xs">{children}</div>
+    <div style={{ marginBottom: '12px' }}>
+      <div style={{ 
+        fontSize: '12px', 
+        fontWeight: 'bold', 
+        backgroundColor: '#e5e5e5', 
+        padding: '4px 8px', 
+        border: '1px solid #9ca3af',
+        marginBottom: '4px',
+        display: 'block',
+        width: '100%',
+        boxSizing: 'border-box' as const,
+      }}>{title}</div>
+      <div style={{ padding: '0 8px', fontSize: '12px' }}>{children}</div>
     </div>
   );
 }

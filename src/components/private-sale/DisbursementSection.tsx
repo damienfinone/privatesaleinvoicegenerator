@@ -240,7 +240,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
               description="Upload payout letter from another financier (fields below will be auto-populated)" 
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="pb_accountName">Account Name</Label>
                 <Input
@@ -271,14 +271,6 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
                   id="pb_bank"
                   value={data.payoutBank.bank}
                   onChange={(e) => handlePayoutBankChange('bank', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="pb_amount">Amount Payable</Label>
-                <Input
-                  id="pb_amount"
-                  value={data.payoutBank.amount}
-                  onChange={(e) => handlePayoutBankChange('amount', e.target.value)}
                 />
               </div>
             </div>

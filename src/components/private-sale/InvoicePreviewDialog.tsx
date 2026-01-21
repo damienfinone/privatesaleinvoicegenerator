@@ -23,7 +23,8 @@ interface InvoicePreviewDialogProps {
 
 const fmt = (v: string) => {
   const n = parseFloat(v.replace(/[^0-9.]/g, ''));
-  return isNaN(n) ? '$0.00' : `$${n.toFixed(2)}`;
+  if (isNaN(n)) return '$0.00';
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(n);
 };
 
 const fmtDate = (v: string) => {

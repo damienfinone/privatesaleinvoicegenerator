@@ -209,9 +209,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
         {/* Option 2: Payout Letter */}
         <div className="space-y-4">
           <h4 className="font-semibold">Option 2: Payout Letter</h4>
-          <p className="text-sm text-muted-foreground">Optional: Upload payout letter from another financier</p>
-          
-          <UploadButton option="payoutBank" extractionType="payout_letter_bank" inputId="payoutBankPdf" />
+          <UploadButton option="payoutBank" extractionType="payout_letter_bank" inputId="payoutBankPdf" description="Upload payout letter from another financier (fields below will be auto-populated)" />
           
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="space-y-2">

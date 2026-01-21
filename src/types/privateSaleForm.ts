@@ -55,7 +55,6 @@ export interface BankAccountDetails {
   bsbNumber: string;
   accountNumber: string;
   bank: string;
-  amount: string;
 }
 
 export interface PayoutBankDetails {
@@ -143,7 +142,6 @@ export const initialFormData: PrivateSaleFormData = {
       bsbNumber: '',
       accountNumber: '',
       bank: '',
-      amount: '',
     },
     payoutBank: {
       accountName: '',

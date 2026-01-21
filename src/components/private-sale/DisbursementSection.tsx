@@ -49,7 +49,6 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
             bsbNumber: extractedData.bsbNumber || data.bankAccount.bsbNumber,
             accountNumber: extractedData.accountNumber || data.bankAccount.accountNumber,
             bank: extractedData.bank || data.bankAccount.bank,
-            amount: data.bankAccount.amount,
           },
         });
       } else if (option === 'payoutBank') {
@@ -162,7 +161,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
           <h4 className="font-semibold">Option 1: Bank Account Details</h4>
           <UploadButton option="bankAccount" extractionType="bank_account" inputId="bankAccountPdf" description="Upload proof of vendor's nominated bank account (fields below will be auto-populated)" />
           
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="ba_accountName">Account Name</Label>
               <Input
@@ -193,14 +192,6 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
                 id="ba_bank"
                 value={data.bankAccount.bank}
                 onChange={(e) => handleBankAccountChange('bank', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ba_amount">Amount ($)</Label>
-              <Input
-                id="ba_amount"
-                value={data.bankAccount.amount}
-                onChange={(e) => handleBankAccountChange('amount', e.target.value)}
               />
             </div>
           </div>

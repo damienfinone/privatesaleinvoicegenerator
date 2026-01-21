@@ -41,6 +41,21 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
+    // Validate that Balance to be Financed = Option 1 Amount + Option 2 Amount
+    const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
+    const option1Amount = parseFloat(formData.disbursement.bankAccount.amount.replace(/[^0-9.]/g, '')) || 0;
+    const option2Amount = parseFloat(formData.disbursement.payoutBank.amount.replace(/[^0-9.]/g, '')) || 0;
+    const totalDisbursement = option1Amount + option2Amount;
+    
+    if (Math.abs(balance - totalDisbursement) > 0.01) {
+      toast({
+        title: 'Disbursement Mismatch',
+        description: `Balance to be Financed ($${balance.toFixed(2)}) must equal the sum of Option 1 ($${option1Amount.toFixed(2)}) + Option 2 ($${option2Amount.toFixed(2)}) = $${totalDisbursement.toFixed(2)}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     setPreviewOpen(true);
   };
 

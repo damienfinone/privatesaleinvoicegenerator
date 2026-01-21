@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Ship, Briefcase, User, Download } from 'lucide-react';
+import { FileText, Ship, Briefcase, User, Download, Eye } from 'lucide-react';
 import { PrivateSaleFormData, initialFormData } from '@/types/privateSaleForm';
 import { BuyerDetailsSection } from './BuyerDetailsSection';
 import { AssetDetailsSection } from './AssetDetailsSection';
@@ -8,6 +8,7 @@ import { InvoiceDetailsSection } from './InvoiceDetailsSection';
 import { DisbursementSection } from './DisbursementSection';
 import { VendorDetailsSection } from './VendorDetailsSection';
 import { LoanTypeSelector, LoanType } from './LoanTypeSelector';
+import { InvoicePreviewDialog } from './InvoicePreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 
 const loanTypeConfig: Record<LoanType, { title: string; icon: React.ReactNode; description: string }> = {
@@ -31,6 +32,7 @@ const loanTypeConfig: Record<LoanType, { title: string; icon: React.ReactNode; d
 export function PrivateSaleForm() {
   const [loanType, setLoanType] = useState<LoanType | null>(null);
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
 
   const config = loanType ? loanTypeConfig[loanType] : null;
@@ -40,10 +42,7 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
-    toast({
-      title: 'Feature Coming Soon',
-      description: 'PDF generation is being rebuilt. Please check back shortly.',
-    });
+    setPreviewOpen(true);
   };
 
   const handleReset = () => {
@@ -118,10 +117,18 @@ export function PrivateSaleForm() {
               Reset Form
             </Button>
             <Button type="submit">
-              <Download className="mr-2 h-4 w-4" />
-              Submit & Download Invoice
+              <Eye className="mr-2 h-4 w-4" />
+              Preview & Download Invoice
             </Button>
           </div>
+
+          {/* Invoice Preview Dialog */}
+          <InvoicePreviewDialog
+            open={previewOpen}
+            onOpenChange={setPreviewOpen}
+            formData={formData}
+            loanType={loanType}
+          />
         </form>
       )}
     </div>

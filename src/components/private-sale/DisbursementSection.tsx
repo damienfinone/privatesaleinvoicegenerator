@@ -266,7 +266,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="pb_bank">Bank/Financier</Label>
+                <Label htmlFor="pb_bank">Bank Name</Label>
                 <Input
                   id="pb_bank"
                   value={data.payoutBank.bank}

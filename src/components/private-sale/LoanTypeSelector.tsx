@@ -10,16 +10,16 @@ interface LoanTypeSelectorProps {
 
 const loanTypeOptions: { value: LoanType; label: string; description: string; icon: React.ReactNode }[] = [
   {
-    value: 'commercial',
-    label: 'Commercial',
-    description: 'Business & commercial vehicles',
-    icon: <Briefcase className="h-8 w-8" />,
-  },
-  {
     value: 'consumer',
     label: 'Consumer',
     description: 'Personal vehicle financing',
     icon: <User className="h-8 w-8" />,
+  },
+  {
+    value: 'commercial',
+    label: 'Commercial',
+    description: 'Business & commercial vehicles',
+    icon: <Briefcase className="h-8 w-8" />,
   },
   {
     value: 'boat',

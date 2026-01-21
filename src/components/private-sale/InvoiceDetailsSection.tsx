@@ -10,8 +10,20 @@ interface InvoiceDetailsSectionProps {
 }
 
 export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionProps) {
+  // Format number with commas for display
+  const formatCurrency = (value: string) => {
+    const num = parseFloat(value.replace(/[^0-9.]/g, ''));
+    if (isNaN(num)) return '';
+    return num.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  // Parse formatted currency back to raw number string
+  const parseCurrency = (value: string) => {
+    return value.replace(/[^0-9.]/g, '');
+  };
+
   const handleChange = (field: keyof InvoiceDetails, value: string) => {
-    onChange({ ...data, [field]: value });
+    onChange({ ...data, [field]: parseCurrency(value) });
   };
 
   // Calculate balance when price or deposit changes
@@ -60,7 +72,7 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
             <Label htmlFor="balanceToBeFinanced">Balance to be Financed ($)</Label>
             <Input
               id="balanceToBeFinanced"
-              value={data.balanceToBeFinanced || calculateBalance()}
+              value={formatCurrency(data.balanceToBeFinanced || calculateBalance())}
               onChange={(e) => handleChange('balanceToBeFinanced', e.target.value)}
               placeholder="Auto-calculated"
             />

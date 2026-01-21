@@ -15,9 +15,22 @@ interface DisbursementSectionProps {
   onChange: (data: DisbursementOptions) => void;
   disbursementType: DisbursementType | null;
   onDisbursementTypeChange: (type: DisbursementType) => void;
+  hasVendorUpload: boolean;
+  onVendorUploadChange: (uploaded: boolean) => void;
+  hasFinancierUpload: boolean;
+  onFinancierUploadChange: (uploaded: boolean) => void;
 }
 
-export function DisbursementSection({ data, onChange, disbursementType, onDisbursementTypeChange }: DisbursementSectionProps) {
+export function DisbursementSection({ 
+  data, 
+  onChange, 
+  disbursementType, 
+  onDisbursementTypeChange,
+  hasVendorUpload,
+  onVendorUploadChange,
+  hasFinancierUpload,
+  onFinancierUploadChange
+}: DisbursementSectionProps) {
   const [uploadingOption, setUploadingOption] = useState<string | null>(null);
   const [successOption, setSuccessOption] = useState<string | null>(null);
   const { toast } = useToast();
@@ -55,6 +68,7 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
             bank: extractedData.bank || data.bankAccount.bank,
           },
         });
+        onVendorUploadChange(true);
       } else if (option === 'payoutBank') {
         // Populate both payoutBank and bpay fields from the payout letter
         // The payout letter may contain bank transfer OR BPAY details
@@ -75,6 +89,7 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
             amount: extractedData.payoutAmount || data.bpay.amount,
           },
         });
+        onFinancierUploadChange(true);
       } else if (option === 'bpay') {
         onChange({
           ...data,

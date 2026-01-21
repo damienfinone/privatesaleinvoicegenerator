@@ -7,6 +7,14 @@ import { Upload, Loader2, CheckCircle, User, Building2 } from 'lucide-react';
 import { DisbursementOptions } from '@/types/privateSaleForm';
 import { parsePdf, ExtractionType } from '@/lib/pdfParser';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export type DisbursementType = 'vendor' | 'financier';
 
@@ -33,7 +41,48 @@ export function DisbursementSection({
 }: DisbursementSectionProps) {
   const [uploadingOption, setUploadingOption] = useState<string | null>(null);
   const [successOption, setSuccessOption] = useState<string | null>(null);
+  const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
   const { toast } = useToast();
+
+  // Check if both bank and BPAY details are complete
+  const hasBankDetails = data.payoutBank.accountName && data.payoutBank.bsbNumber && 
+                         data.payoutBank.accountNumber && data.payoutBank.bank;
+  const hasBpayDetails = data.bpay.billerCode && data.bpay.referenceNumber;
+
+  const handleSelectPaymentMethod = (method: 'bank' | 'bpay') => {
+    if (method === 'bank') {
+      // Clear BPAY fields
+      onChange({
+        ...data,
+        bpay: {
+          ...data.bpay,
+          billerCode: '',
+          referenceNumber: '',
+        },
+      });
+      toast({
+        title: 'Bank Account Selected',
+        description: 'BPAY fields have been cleared.',
+      });
+    } else {
+      // Clear bank account fields
+      onChange({
+        ...data,
+        payoutBank: {
+          ...data.payoutBank,
+          accountName: '',
+          bsbNumber: '',
+          accountNumber: '',
+          bank: '',
+        },
+      });
+      toast({
+        title: 'BPAY Selected',
+        description: 'Bank account fields have been cleared.',
+      });
+    }
+    setShowPaymentMethodDialog(false);
+  };
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -122,6 +171,20 @@ export function DisbursementSection({
           : 'No details could be extracted from this PDF. Please enter manually.',
         variant: fieldsPopulated.length > 0 ? 'default' : 'destructive',
       });
+
+      // Check if both bank and BPAY are now complete (for financier payout letter)
+      if (option === 'payoutBank') {
+        const updatedBankDetails = (extractedData.accountName || data.payoutBank.accountName) && 
+                                   (extractedData.bsbNumber || data.payoutBank.bsbNumber) && 
+                                   (extractedData.accountNumber || data.payoutBank.accountNumber) && 
+                                   (extractedData.bank || data.payoutBank.bank);
+        const updatedBpayDetails = (extractedData.billerCode || data.bpay.billerCode) && 
+                                   (extractedData.referenceNumber || data.bpay.referenceNumber);
+        
+        if (updatedBankDetails && updatedBpayDetails) {
+          setShowPaymentMethodDialog(true);
+        }
+      }
     } catch (error) {
       console.error('Error processing PDF:', error);
       toast({
@@ -153,11 +216,29 @@ export function DisbursementSection({
 
   const handlePayoutBankChange = (field: keyof typeof data.payoutBank, value: string) => {
     const finalValue = field === 'bsbNumber' ? normalizeBsb(value) : value;
-    onChange({ ...data, payoutBank: { ...data.payoutBank, [field]: finalValue } });
+    const newData = { ...data, payoutBank: { ...data.payoutBank, [field]: finalValue } };
+    onChange(newData);
+    
+    // Check if both are now complete after this change
+    const updatedBankDetails = newData.payoutBank.accountName && newData.payoutBank.bsbNumber && 
+                               newData.payoutBank.accountNumber && newData.payoutBank.bank;
+    if (updatedBankDetails && hasBpayDetails) {
+      setShowPaymentMethodDialog(true);
+    }
   };
 
   const handleBpayChange = (field: keyof typeof data.bpay, value: string) => {
-    onChange({ ...data, bpay: { ...data.bpay, [field]: value } });
+    const newData = { ...data, bpay: { ...data.bpay, [field]: value } };
+    onChange(newData);
+    
+    // Check if both are now complete after this change (only for billerCode and referenceNumber)
+    if (field === 'billerCode' || field === 'referenceNumber') {
+      const updatedBpayDetails = (field === 'billerCode' ? value : newData.bpay.billerCode) && 
+                                 (field === 'referenceNumber' ? value : newData.bpay.referenceNumber);
+      if (hasBankDetails && updatedBpayDetails) {
+        setShowPaymentMethodDialog(true);
+      }
+    }
   };
 
   const UploadButton = ({ 
@@ -369,6 +450,26 @@ export function DisbursementSection({
           </div>
         )}
       </CardContent>
+
+      {/* Payment Method Selection Dialog */}
+      <AlertDialog open={showPaymentMethodDialog} onOpenChange={setShowPaymentMethodDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Select Payment Method</AlertDialogTitle>
+            <AlertDialogDescription>
+              Both bank account and BPAY information has been provided. Please select which to proceed with (unnecessary fields will be cleared).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={() => handleSelectPaymentMethod('bank')}>
+              Bank Account
+            </Button>
+            <Button onClick={() => handleSelectPaymentMethod('bpay')}>
+              BPAY
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

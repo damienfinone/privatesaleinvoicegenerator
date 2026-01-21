@@ -283,11 +283,9 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
               </div>
             </div>
 
-            <div className="text-center font-semibold text-muted-foreground py-2">OR by BPAY</div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="bpay_billerCode">Biller Code</Label>
+                <Label htmlFor="bpay_billerCode">Biller Code (BPAY only)</Label>
                 <Input
                   id="bpay_billerCode"
                   value={data.bpay.billerCode}
@@ -295,11 +293,19 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bpay_reference">Reference Number</Label>
+                <Label htmlFor="bpay_reference">Reference Number (BPAY only)</Label>
                 <Input
                   id="bpay_reference"
                   value={data.bpay.referenceNumber}
                   onChange={(e) => handleBpayChange('referenceNumber', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bpay_amount">Amount Payable</Label>
+                <Input
+                  id="bpay_amount"
+                  value={data.bpay.amount}
+                  onChange={(e) => handleBpayChange('amount', e.target.value)}
                 />
               </div>
             </div>

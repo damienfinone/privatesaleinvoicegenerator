@@ -160,6 +160,12 @@ Only return the JSON object, no other text.`;
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
       const jsonStr = jsonMatch[1].trim();
       extractedData = JSON.parse(jsonStr);
+      
+      // Normalize BSB number: remove spaces and hyphens, keep only digits
+      if (extractedData.bsbNumber) {
+        extractedData.bsbNumber = extractedData.bsbNumber.replace(/[\s\-]/g, '');
+        console.log('Normalized BSB:', extractedData.bsbNumber);
+      }
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
       // Return raw content if parsing fails

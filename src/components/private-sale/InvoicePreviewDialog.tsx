@@ -13,12 +13,14 @@ import { Download, Eye, Loader2 } from 'lucide-react';
 import { PrivateSaleFormData } from '@/types/privateSaleForm';
 
 type LoanType = 'commercial' | 'consumer' | 'boat';
+type DisbursementType = 'vendor' | 'financier';
 
 interface InvoicePreviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   formData: PrivateSaleFormData;
   loanType: LoanType;
+  disbursementType: DisbursementType | null;
 }
 
 const fmt = (v: string) => {
@@ -64,7 +66,63 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function ConsumerContent({ data }: { data: PrivateSaleFormData }) {
+function DisbursementContent({ data, disbursementType }: { data: PrivateSaleFormData; disbursementType: DisbursementType | null }) {
+  const isVendor = disbursementType === 'vendor';
+  const isFinancier = disbursementType === 'financier';
+  
+  // For financier, determine if BPAY or Bank details are used
+  const hasBpayDetails = data.disbursement.bpay.billerCode && data.disbursement.bpay.referenceNumber;
+  const hasBankDetails = data.disbursement.payoutBank.accountName && data.disbursement.payoutBank.bsbNumber;
+  
+  return (
+    <Section title="Disbursement Options for Settlement">
+      {/* Payee Type */}
+      <Field label="Payee" value={isVendor ? 'Vendor' : isFinancier ? 'Financier' : '—'} />
+      
+      {/* Vendor: Show bank account details */}
+      {isVendor && (
+        <>
+          <div className="font-semibold text-xs mt-2 mb-1">Payment Details - Bank Account:</div>
+          <div className="grid grid-cols-2 gap-x-4">
+            <Field label="Account Name" value={data.disbursement.bankAccount.accountName} />
+            <Field label="Bank" value={data.disbursement.bankAccount.bank} />
+            <Field label="BSB Number" value={data.disbursement.bankAccount.bsbNumber} />
+            <Field label="Account Number" value={data.disbursement.bankAccount.accountNumber} />
+          </div>
+          <Field label="Amount" value={fmt(data.invoice.balanceToBeFinanced)} />
+        </>
+      )}
+      
+      {/* Financier with BPAY */}
+      {isFinancier && hasBpayDetails && (
+        <>
+          <div className="font-semibold text-xs mt-2 mb-1">Payment Details - BPAY:</div>
+          <div className="grid grid-cols-2 gap-x-4">
+            <Field label="Biller Code" value={data.disbursement.bpay.billerCode} />
+            <Field label="Reference Number" value={data.disbursement.bpay.referenceNumber} />
+          </div>
+          <Field label="Amount Payable" value={fmt(data.disbursement.bpay.amount)} />
+        </>
+      )}
+      
+      {/* Financier with Bank Account (no BPAY) */}
+      {isFinancier && !hasBpayDetails && hasBankDetails && (
+        <>
+          <div className="font-semibold text-xs mt-2 mb-1">Payment Details - Bank Account:</div>
+          <div className="grid grid-cols-2 gap-x-4">
+            <Field label="Account Name" value={data.disbursement.payoutBank.accountName} />
+            <Field label="Bank" value={data.disbursement.payoutBank.bank} />
+            <Field label="BSB Number" value={data.disbursement.payoutBank.bsbNumber} />
+            <Field label="Account Number" value={data.disbursement.payoutBank.accountNumber} />
+          </div>
+          <Field label="Amount Payable" value={fmt(data.disbursement.bpay.amount)} />
+        </>
+      )}
+    </Section>
+  );
+}
+
+function ConsumerContent({ data, disbursementType }: { data: PrivateSaleFormData; disbursementType: DisbursementType | null }) {
   return (
     <>
       <Section title="Buyer's Details">
@@ -97,47 +155,12 @@ function ConsumerContent({ data }: { data: PrivateSaleFormData }) {
         <Field label="Balance to be financed" value={fmt(data.invoice.balanceToBeFinanced)} />
       </Section>
 
-      <Section title="Disbursement Options for Settlement">
-        <div className="font-semibold text-xs mt-1 mb-1">Bank Account Details:</div>
-        <div className="grid grid-cols-2 gap-x-4">
-          <Field label="Account Name" value={data.disbursement.bankAccount.accountName} />
-          <Field label="Bank" value={data.disbursement.bankAccount.bank} />
-          <Field label="BSB Number" value={data.disbursement.bankAccount.bsbNumber} />
-          <Field label="Account Number" value={data.disbursement.bankAccount.accountNumber} />
-        </div>
-
-        {data.disbursement.payoutBank.accountName && (
-          <>
-            <div className="font-semibold text-xs mt-2 mb-1">Payout Letter - Bank Account Details:</div>
-            <div className="grid grid-cols-2 gap-x-4">
-              <Field label="Account Name" value={data.disbursement.payoutBank.accountName} />
-              <Field label="Bank" value={data.disbursement.payoutBank.bank} />
-              <Field label="BSB Number" value={data.disbursement.payoutBank.bsbNumber} />
-              <Field label="Account Number" value={data.disbursement.payoutBank.accountNumber} />
-              <Field label="Amount" value={fmt(data.disbursement.payoutBank.amount)} />
-            </div>
-          </>
-        )}
-
-        {data.disbursement.bpay.billerCode && (
-          <>
-            <div className="font-semibold text-xs mt-2 mb-1">Payout Letter - BPAY Details:</div>
-            <div className="grid grid-cols-2 gap-x-4">
-              <Field label="Account Name" value={data.disbursement.bpay.accountName} />
-              <Field label="Bank" value={data.disbursement.bpay.bank} />
-              <Field label="Biller Code" value={data.disbursement.bpay.billerCode} />
-              <Field label="Reference Number" value={data.disbursement.bpay.referenceNumber} />
-              <Field label="Amount" value={fmt(data.disbursement.bpay.amount)} />
-            </div>
-          </>
-        )}
-      </Section>
-
+      <DisbursementContent data={data} disbursementType={disbursementType} />
     </>
   );
 }
 
-function WatercraftContent({ data }: { data: PrivateSaleFormData }) {
+function WatercraftContent({ data, disbursementType }: { data: PrivateSaleFormData; disbursementType: DisbursementType | null }) {
   return (
     <>
       <Section title="Buyer's Details">
@@ -187,21 +210,12 @@ function WatercraftContent({ data }: { data: PrivateSaleFormData }) {
         <Field label="Balance to be financed" value={fmt(data.invoice.balanceToBeFinanced)} />
       </Section>
 
-      <Section title="Disbursement Options for Settlement">
-        <div className="font-semibold text-xs mt-1 mb-1">Bank Account Details:</div>
-        <div className="grid grid-cols-2 gap-x-4">
-          <Field label="Account Name" value={data.disbursement.bankAccount.accountName} />
-          <Field label="Bank" value={data.disbursement.bankAccount.bank} />
-          <Field label="BSB Number" value={data.disbursement.bankAccount.bsbNumber} />
-          <Field label="Account Number" value={data.disbursement.bankAccount.accountNumber} />
-        </div>
-      </Section>
-
+      <DisbursementContent data={data} disbursementType={disbursementType} />
     </>
   );
 }
 
-export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType }: InvoicePreviewDialogProps) {
+export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, disbursementType }: InvoicePreviewDialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -256,9 +270,9 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType }:
 
             {/* Content based on loan type */}
             {loanType === 'boat' ? (
-              <WatercraftContent data={formData} />
+              <WatercraftContent data={formData} disbursementType={disbursementType} />
             ) : (
-              <ConsumerContent data={formData} />
+              <ConsumerContent data={formData} disbursementType={disbursementType} />
             )}
 
             {/* Footer */}

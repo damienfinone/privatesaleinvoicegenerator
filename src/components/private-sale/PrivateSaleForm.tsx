@@ -49,7 +49,7 @@ export function PrivateSaleForm() {
     if (Math.abs(balance - totalDisbursement) > 0.01) {
       toast({
         title: 'Disbursement Mismatch',
-        description: `Disbursement amount(s) of $${totalDisbursement.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} do not match the Balance to be Financed of $${balance.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        description: 'Amount Payable as listed in the payout letter does not match the Balance to be Financed. Please review these sections.',
         variant: 'destructive',
       });
       return;

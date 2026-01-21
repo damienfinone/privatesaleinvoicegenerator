@@ -56,6 +56,8 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
           },
         });
       } else if (option === 'payoutBank') {
+        // Populate both payoutBank and bpay fields from the payout letter
+        // The payout letter may contain bank transfer OR BPAY details
         onChange({
           ...data,
           payoutBank: {
@@ -64,6 +66,13 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
             accountNumber: extractedData.accountNumber || data.payoutBank.accountNumber,
             bank: extractedData.bank || data.payoutBank.bank,
             amount: extractedData.payoutAmount || data.payoutBank.amount,
+          },
+          bpay: {
+            ...data.bpay,
+            billerCode: extractedData.billerCode || data.bpay.billerCode,
+            referenceNumber: extractedData.referenceNumber || data.bpay.referenceNumber,
+            // Also populate BPAY amount from payout letter
+            amount: extractedData.payoutAmount || data.bpay.amount,
           },
         });
       } else if (option === 'bpay') {
@@ -80,9 +89,23 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
       }
 
       setSuccessOption(option);
+      
+      // Build a more accurate success message
+      const fieldsPopulated: string[] = [];
+      if (extractedData.accountName) fieldsPopulated.push('Account Name');
+      if (extractedData.bsbNumber) fieldsPopulated.push('BSB');
+      if (extractedData.accountNumber) fieldsPopulated.push('Account Number');
+      if (extractedData.bank) fieldsPopulated.push('Bank');
+      if (extractedData.billerCode) fieldsPopulated.push('Biller Code');
+      if (extractedData.referenceNumber) fieldsPopulated.push('Reference Number');
+      if (extractedData.payoutAmount) fieldsPopulated.push('Amount');
+      
       toast({
         title: 'PDF processed successfully',
-        description: 'Banking details have been extracted and populated',
+        description: fieldsPopulated.length > 0 
+          ? `Extracted: ${fieldsPopulated.join(', ')}`
+          : 'No details could be extracted from this PDF. Please enter manually.',
+        variant: fieldsPopulated.length > 0 ? 'default' : 'destructive',
       });
     } catch (error) {
       console.error('Error processing PDF:', error);

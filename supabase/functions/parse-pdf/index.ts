@@ -78,14 +78,20 @@ Only return the JSON object, no other text.`;
         break;
       
       case 'payout_letter_bank':
-        extractionPrompt = `Analyze this PDF document which is a payout letter from a financier. Extract the bank account details for payout. Return a JSON object with these fields (use empty string if not found):
+        extractionPrompt = `Analyze this PDF document which is a payout letter from a financier. Extract ALL payment details - the letter may contain bank transfer details, BPAY details, or both. Return a JSON object with these fields (use empty string if not found):
 {
   "accountName": "",
   "bsbNumber": "",
   "accountNumber": "",
   "bank": "",
+  "billerCode": "",
+  "referenceNumber": "",
   "payoutAmount": ""
 }
+Look for:
+- Bank transfer details: BSB, account number, account name
+- BPAY details: biller code (usually 4-6 digits), reference number (customer reference)
+- Payout/settlement amount: the total amount to pay
 Only return the JSON object, no other text.`;
         break;
       

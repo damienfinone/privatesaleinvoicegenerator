@@ -96,12 +96,26 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
     }
   };
 
+  // Normalize BSB: remove spaces/hyphens and validate
+  const normalizeBsb = (value: string) => value.replace(/[\s\-]/g, '');
+  const isValidBsb = (value: string) => /^\d{6}$/.test(normalizeBsb(value));
+  const getBsbError = (value: string) => {
+    if (!value) return null;
+    const normalized = normalizeBsb(value);
+    if (normalized.length > 0 && !/^\d*$/.test(normalized)) return 'BSB must contain only numbers';
+    if (normalized.length > 0 && normalized.length !== 6) return 'BSB must be exactly 6 digits';
+    return null;
+  };
+
   const handleBankAccountChange = (field: keyof typeof data.bankAccount, value: string) => {
-    onChange({ ...data, bankAccount: { ...data.bankAccount, [field]: value } });
+    // Auto-normalize BSB on change
+    const finalValue = field === 'bsbNumber' ? normalizeBsb(value) : value;
+    onChange({ ...data, bankAccount: { ...data.bankAccount, [field]: finalValue } });
   };
 
   const handlePayoutBankChange = (field: keyof typeof data.payoutBank, value: string) => {
-    onChange({ ...data, payoutBank: { ...data.payoutBank, [field]: value } });
+    const finalValue = field === 'bsbNumber' ? normalizeBsb(value) : value;
+    onChange({ ...data, payoutBank: { ...data.payoutBank, [field]: finalValue } });
   };
 
   const handleBpayChange = (field: keyof typeof data.bpay, value: string) => {
@@ -208,7 +222,13 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
                   id="ba_bsb"
                   value={data.bankAccount.bsbNumber}
                   onChange={(e) => handleBankAccountChange('bsbNumber', e.target.value)}
+                  maxLength={6}
+                  placeholder="000000"
+                  className={getBsbError(data.bankAccount.bsbNumber) ? 'border-destructive' : ''}
                 />
+                {getBsbError(data.bankAccount.bsbNumber) && (
+                  <p className="text-xs text-destructive">{getBsbError(data.bankAccount.bsbNumber)}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="ba_accountNumber">Account Number</Label>
@@ -256,7 +276,13 @@ export function DisbursementSection({ data, onChange, disbursementType, onDisbur
                   id="pb_bsb"
                   value={data.payoutBank.bsbNumber}
                   onChange={(e) => handlePayoutBankChange('bsbNumber', e.target.value)}
+                  maxLength={6}
+                  placeholder="000000"
+                  className={getBsbError(data.payoutBank.bsbNumber) ? 'border-destructive' : ''}
                 />
+                {getBsbError(data.payoutBank.bsbNumber) && (
+                  <p className="text-xs text-destructive">{getBsbError(data.payoutBank.bsbNumber)}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="pb_accountNumber">Account Number</Label>

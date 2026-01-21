@@ -63,7 +63,7 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
             <Label htmlFor="depositAmount">Deposit Amount ($)</Label>
             <Input
               id="depositAmount"
-              value={data.depositAmount}
+              value={formatCurrency(data.depositAmount)}
               onChange={(e) => handleChange('depositAmount', e.target.value)}
               placeholder="0.00"
             />

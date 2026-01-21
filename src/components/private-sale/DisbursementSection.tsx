@@ -206,9 +206,9 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
           </div>
         </div>
 
-        {/* Option 2: Payout Letter with Bank Details */}
+        {/* Option 2: Payout Letter */}
         <div className="space-y-4">
-          <h4 className="font-semibold">Option 2: Payout Letter – with Bank Account Details</h4>
+          <h4 className="font-semibold">Option 2: Payout Letter</h4>
           <p className="text-sm text-muted-foreground">Optional: Upload payout letter from another financier</p>
           
           <UploadButton option="payoutBank" extractionType="payout_letter_bank" inputId="payoutBankPdf" />
@@ -255,24 +255,10 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
               />
             </div>
           </div>
-        </div>
 
-        {/* Option 3: Payout Letter with BPAY Details */}
-        <div className="space-y-4">
-          <h4 className="font-semibold">Option 3: Payout Letter – with BPAY Details</h4>
-          <p className="text-sm text-muted-foreground">Optional: Upload payout letter with BPAY information</p>
-          
-          <UploadButton option="bpay" extractionType="payout_letter_bpay" inputId="bpayPdf" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="bpay_accountName">Account Name</Label>
-              <Input
-                id="bpay_accountName"
-                value={data.bpay.accountName}
-                onChange={(e) => handleBpayChange('accountName', e.target.value)}
-              />
-            </div>
+          <div className="text-center font-semibold text-muted-foreground py-2">OR by BPAY</div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="bpay_billerCode">Biller Code</Label>
               <Input
@@ -287,22 +273,6 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
                 id="bpay_reference"
                 value={data.bpay.referenceNumber}
                 onChange={(e) => handleBpayChange('referenceNumber', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bpay_bank">Bank/Financier</Label>
-              <Input
-                id="bpay_bank"
-                value={data.bpay.bank}
-                onChange={(e) => handleBpayChange('bank', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bpay_amount">Amount ($)</Label>
-              <Input
-                id="bpay_amount"
-                value={data.bpay.amount}
-                onChange={(e) => handleBpayChange('amount', e.target.value)}
               />
             </div>
           </div>

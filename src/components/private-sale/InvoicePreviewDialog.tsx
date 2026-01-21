@@ -215,12 +215,18 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType }:
     if (!contentRef.current) return;
     setGenerating(true);
     try {
-      const canvas = await html2canvas(contentRef.current, { scale: 2, backgroundColor: '#fff' });
+      const canvas = await html2canvas(contentRef.current, { 
+        scale: 1.5, // Reduced from 2 for smaller file size
+        backgroundColor: '#fff',
+        useCORS: true,
+        logging: false,
+      });
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       const w = pdf.internal.pageSize.getWidth();
       const h = pdf.internal.pageSize.getHeight();
       const r = Math.min(w / canvas.width, h / canvas.height);
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width * r, canvas.height * r);
+      // Use JPEG with compression for smaller file size
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, canvas.width * r, canvas.height * r);
       const label = loanType === 'boat' ? 'Watercraft' : loanType === 'commercial' ? 'Commercial' : 'Consumer';
       pdf.save(`${label}_Vendor_Tax_Invoice.pdf`);
     } finally {
@@ -240,12 +246,12 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType }:
           <div ref={contentRef} className="bg-white text-black p-8 w-[210mm] mx-auto shadow-lg font-sans text-xs leading-relaxed">
             {/* Header */}
             <div className="text-center border-b-2 border-black pb-4 mb-4">
-              <h1 className="text-2xl font-bold mb-1">Fin One Pty Ltd</h1>
-              <p className="text-xs">ABN: 80 139 719 903</p>
-              <p className="text-xs">Australian Credit Licence: 387 528</p>
-              <p className="text-xs">Phone: 1800 346 663 | Fax: (07) 4723 5466</p>
-              <p className="text-xs">PO Box 3041, Hermit Park QLD 4812</p>
-              <h2 className="text-lg font-bold mt-3 border-t border-b border-gray-400 py-2">{title}</h2>
+              <h1 className="text-2xl font-bold mb-1" style={{ letterSpacing: '0.05em' }}>Finance One Pty Ltd</h1>
+              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>ABN: 80 139 719 903</p>
+              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Australian Credit Licence: 387 528</p>
+              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Phone: 1800 346 663 &nbsp;|&nbsp; Fax: (07) 4723 5466</p>
+              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>PO Box 3041, Hermit Park QLD 4812</p>
+              <h2 className="text-lg font-bold mt-3 border-t border-b border-gray-400 py-2" style={{ letterSpacing: '0.02em' }}>{title}</h2>
             </div>
 
             {/* Content based on loan type */}

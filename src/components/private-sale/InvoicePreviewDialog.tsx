@@ -134,10 +134,6 @@ function ConsumerContent({ data }: { data: PrivateSaleFormData }) {
         )}
       </Section>
 
-      <Section title="Vendor Declaration">
-        <Field label="Vendor Name" value={data.vendor.name} />
-        <Field label="Date Signed" value={fmtDate(data.vendor.dateSigned)} />
-      </Section>
     </>
   );
 }
@@ -203,10 +199,6 @@ function WatercraftContent({ data }: { data: PrivateSaleFormData }) {
         </div>
       </Section>
 
-      <Section title="Vendor Declaration">
-        <Field label="Vendor Name" value={data.vendor.name} />
-        <Field label="Date Signed" value={fmtDate(data.vendor.dateSigned)} />
-      </Section>
     </>
   );
 }

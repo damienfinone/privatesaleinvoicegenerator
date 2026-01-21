@@ -6,7 +6,6 @@ import { BuyerDetailsSection } from './BuyerDetailsSection';
 import { AssetDetailsSection } from './AssetDetailsSection';
 import { InvoiceDetailsSection } from './InvoiceDetailsSection';
 import { DisbursementSection } from './DisbursementSection';
-import { VendorDetailsSection } from './VendorDetailsSection';
 import { LoanTypeSelector, LoanType } from './LoanTypeSelector';
 import { InvoicePreviewDialog } from './InvoicePreviewDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -106,10 +105,6 @@ export function PrivateSaleForm() {
             onChange={(disbursement) => setFormData({ ...formData, disbursement })}
           />
 
-          <VendorDetailsSection
-            data={formData.vendor}
-            onChange={(vendor) => setFormData({ ...formData, vendor })}
-          />
 
           {/* Form Actions */}
           <div className="flex gap-4 justify-end pt-6 border-t">

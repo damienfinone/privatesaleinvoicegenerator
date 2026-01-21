@@ -41,11 +41,10 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
-    // Validate that Balance to be Financed = Option 1 Amount + Option 2 Amount
+    // Validate that Balance to be Financed = Option 2 Amount
     const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
-    const option1Amount = parseFloat(formData.disbursement.bankAccount.amount.replace(/[^0-9.]/g, '')) || 0;
     const option2Amount = parseFloat(formData.disbursement.payoutBank.amount.replace(/[^0-9.]/g, '')) || 0;
-    const totalDisbursement = option1Amount + option2Amount;
+    const totalDisbursement = option2Amount;
     
     if (Math.abs(balance - totalDisbursement) > 0.01) {
       toast({

@@ -104,7 +104,6 @@ function ConsumerContent({ data }: { data: PrivateSaleFormData }) {
           <Field label="Bank" value={data.disbursement.bankAccount.bank} />
           <Field label="BSB Number" value={data.disbursement.bankAccount.bsbNumber} />
           <Field label="Account Number" value={data.disbursement.bankAccount.accountNumber} />
-          <Field label="Amount" value={fmt(data.disbursement.bankAccount.amount)} />
         </div>
 
         {data.disbursement.payoutBank.accountName && (
@@ -195,7 +194,6 @@ function WatercraftContent({ data }: { data: PrivateSaleFormData }) {
           <Field label="Bank" value={data.disbursement.bankAccount.bank} />
           <Field label="BSB Number" value={data.disbursement.bankAccount.bsbNumber} />
           <Field label="Account Number" value={data.disbursement.bankAccount.accountNumber} />
-          <Field label="Amount" value={fmt(data.disbursement.bankAccount.amount)} />
         </div>
       </Section>
 

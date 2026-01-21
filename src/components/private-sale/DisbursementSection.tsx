@@ -8,17 +8,18 @@ import { DisbursementOptions } from '@/types/privateSaleForm';
 import { parsePdf, ExtractionType } from '@/lib/pdfParser';
 import { useToast } from '@/hooks/use-toast';
 
-type DisbursementType = 'vendor' | 'financier';
+export type DisbursementType = 'vendor' | 'financier';
 
 interface DisbursementSectionProps {
   data: DisbursementOptions;
   onChange: (data: DisbursementOptions) => void;
+  disbursementType: DisbursementType | null;
+  onDisbursementTypeChange: (type: DisbursementType) => void;
 }
 
-export function DisbursementSection({ data, onChange }: DisbursementSectionProps) {
+export function DisbursementSection({ data, onChange, disbursementType, onDisbursementTypeChange }: DisbursementSectionProps) {
   const [uploadingOption, setUploadingOption] = useState<string | null>(null);
   const [successOption, setSuccessOption] = useState<string | null>(null);
-  const [disbursementType, setDisbursementType] = useState<DisbursementType | null>(null);
   const { toast } = useToast();
 
   const handleFileUpload = async (
@@ -165,7 +166,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
             type="button"
             variant={disbursementType === 'vendor' ? 'default' : 'outline'}
             className="flex-1 h-16"
-            onClick={() => setDisbursementType('vendor')}
+            onClick={() => onDisbursementTypeChange('vendor')}
           >
             <User className="mr-2 h-5 w-5" />
             Vendor
@@ -174,7 +175,7 @@ export function DisbursementSection({ data, onChange }: DisbursementSectionProps
             type="button"
             variant={disbursementType === 'financier' ? 'default' : 'outline'}
             className="flex-1 h-16"
-            onClick={() => setDisbursementType('financier')}
+            onClick={() => onDisbursementTypeChange('financier')}
           >
             <Building2 className="mr-2 h-5 w-5" />
             Financier

@@ -19,14 +19,25 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
         <CardTitle className="text-lg">Buyer's Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="buyerName">Buyer's Name</Label>
-          <Input
-            id="buyerName"
-            value={data.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-            placeholder="Enter buyer's full name"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="buyerName">Buyer's Name</Label>
+            <Input
+              id="buyerName"
+              value={data.name}
+              onChange={(e) => handleChange('name', e.target.value)}
+              placeholder="Enter buyer's full name"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="buyerContact">Buyer's Contact Number</Label>
+            <Input
+              id="buyerContact"
+              value={data.contactNumber}
+              onChange={(e) => handleChange('contactNumber', e.target.value)}
+              placeholder="Enter contact number"
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="buyerAddress">Buyer's Address</Label>
@@ -35,15 +46,6 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
             value={data.address}
             onChange={(e) => handleChange('address', e.target.value)}
             placeholder="Enter buyer's address"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="buyerContact">Buyer's Contact Number</Label>
-          <Input
-            id="buyerContact"
-            value={data.contactNumber}
-            onChange={(e) => handleChange('contactNumber', e.target.value)}
-            placeholder="Enter contact number"
           />
         </div>
       </CardContent>

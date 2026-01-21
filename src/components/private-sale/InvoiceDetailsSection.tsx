@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,6 +20,16 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
     const deposit = parseFloat(data.depositAmount.replace(/[^0-9.]/g, '')) || 0;
     return (price - deposit).toFixed(2);
   };
+
+  // Auto-update balance when purchase price or deposit changes
+  useEffect(() => {
+    if (data.purchasePrice || data.depositAmount) {
+      const calculatedBalance = calculateBalance();
+      if (data.balanceToBeFinanced !== calculatedBalance) {
+        onChange({ ...data, balanceToBeFinanced: calculatedBalance });
+      }
+    }
+  }, [data.purchasePrice, data.depositAmount]);
 
   return (
     <Card>

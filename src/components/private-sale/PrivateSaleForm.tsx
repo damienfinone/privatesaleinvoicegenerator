@@ -33,14 +33,76 @@ export function PrivateSaleForm() {
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [disbursementType, setDisbursementType] = useState<DisbursementType | null>(null);
+  const [hasVendorUpload, setHasVendorUpload] = useState(false);
+  const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
   const { toast } = useToast();
 
   const config = loanType ? loanTypeConfig[loanType] : null;
+
+  const validateDisbursement = (): string | null => {
+    if (!disbursementType) {
+      return 'Please select a disbursement type (Vendor or Financier)';
+    }
+
+    if (disbursementType === 'vendor') {
+      // Vendor requires: all 4 bank fields + upload
+      if (!hasVendorUpload) {
+        return 'Please upload proof of vendor\'s nominated bank account';
+      }
+      const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.bankAccount;
+      if (!accountName || !bsbNumber || !accountNumber || !bank) {
+        return 'Please fill in all vendor bank account fields (Account Name, BSB, Account Number, Bank)';
+      }
+      // Also validate BSB format
+      if (!/^\d{6}$/.test(bsbNumber)) {
+        return 'Vendor BSB must be exactly 6 digits';
+      }
+    }
+
+    if (disbursementType === 'financier') {
+      // Financier requires: upload + Amount Payable + (BPAY fields OR bank fields)
+      if (!hasFinancierUpload) {
+        return 'Please upload the payout letter from the financier';
+      }
+      
+      const { amount: bpayAmount, billerCode, referenceNumber } = formData.disbursement.bpay;
+      const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.payoutBank;
+      
+      if (!bpayAmount) {
+        return 'Please enter the Amount Payable';
+      }
+
+      const hasBpayDetails = billerCode && referenceNumber;
+      const hasBankDetails = accountName && bsbNumber && accountNumber && bank;
+
+      if (!hasBpayDetails && !hasBankDetails) {
+        return 'Please fill in either BPAY details (Biller Code + Reference) OR bank account details (all 4 fields)';
+      }
+
+      // Validate BSB if bank details are provided
+      if (hasBankDetails && !/^\d{6}$/.test(bsbNumber)) {
+        return 'Payout BSB must be exactly 6 digits';
+      }
+    }
+
+    return null;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!loanType) return;
+    
+    // Validate disbursement section
+    const disbursementError = validateDisbursement();
+    if (disbursementError) {
+      toast({
+        title: 'Disbursement Validation Error',
+        description: disbursementError,
+        variant: 'destructive',
+      });
+      return;
+    }
     
     // Validate balance only for Financier option
     if (disbursementType === 'financier') {
@@ -62,6 +124,8 @@ export function PrivateSaleForm() {
 
   const handleReset = () => {
     setFormData(initialFormData);
+    setHasVendorUpload(false);
+    setHasFinancierUpload(false);
     toast({
       title: 'Form Reset',
       description: 'All fields have been cleared.',
@@ -72,6 +136,8 @@ export function PrivateSaleForm() {
     setLoanType(newType);
     setFormData(initialFormData);
     setDisbursementType(null);
+    setHasVendorUpload(false);
+    setHasFinancierUpload(false);
   };
 
   return (
@@ -122,6 +188,10 @@ export function PrivateSaleForm() {
             onChange={(disbursement) => setFormData({ ...formData, disbursement })}
             disbursementType={disbursementType}
             onDisbursementTypeChange={setDisbursementType}
+            hasVendorUpload={hasVendorUpload}
+            onVendorUploadChange={setHasVendorUpload}
+            hasFinancierUpload={hasFinancierUpload}
+            onFinancierUploadChange={setHasFinancierUpload}
           />
 
 

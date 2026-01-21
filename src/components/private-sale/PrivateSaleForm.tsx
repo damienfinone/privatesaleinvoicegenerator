@@ -5,7 +5,7 @@ import { PrivateSaleFormData, initialFormData } from '@/types/privateSaleForm';
 import { BuyerDetailsSection } from './BuyerDetailsSection';
 import { AssetDetailsSection } from './AssetDetailsSection';
 import { InvoiceDetailsSection } from './InvoiceDetailsSection';
-import { DisbursementSection } from './DisbursementSection';
+import { DisbursementSection, DisbursementType } from './DisbursementSection';
 import { LoanTypeSelector, LoanType } from './LoanTypeSelector';
 import { InvoicePreviewDialog } from './InvoicePreviewDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +32,7 @@ export function PrivateSaleForm() {
   const [loanType, setLoanType] = useState<LoanType | null>(null);
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [disbursementType, setDisbursementType] = useState<DisbursementType | null>(null);
   const { toast } = useToast();
 
   const config = loanType ? loanTypeConfig[loanType] : null;
@@ -41,18 +42,19 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
-    // Validate that Balance to be Financed = Option 2 Amount
-    const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
-    const option2Amount = parseFloat(formData.disbursement.payoutBank.amount.replace(/[^0-9.]/g, '')) || 0;
-    const totalDisbursement = option2Amount;
-    
-    if (Math.abs(balance - totalDisbursement) > 0.01) {
-      toast({
-        title: 'Disbursement Mismatch',
-        description: 'Amount Payable as listed in the payout letter does not match the Balance to be Financed. Please review these sections.',
-        variant: 'destructive',
-      });
-      return;
+    // Validate balance only for Financier option
+    if (disbursementType === 'financier') {
+      const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
+      const amountPayable = parseFloat(formData.disbursement.bpay.amount.replace(/[^0-9.]/g, '')) || 0;
+      
+      if (Math.abs(balance - amountPayable) > 0.01) {
+        toast({
+          title: 'Disbursement Mismatch',
+          description: 'Amount Payable as listed in the payout letter does not match the Balance to be Financed. Please review these sections.',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
     
     setPreviewOpen(true);
@@ -69,6 +71,7 @@ export function PrivateSaleForm() {
   const handleLoanTypeChange = (newType: LoanType) => {
     setLoanType(newType);
     setFormData(initialFormData);
+    setDisbursementType(null);
   };
 
   return (
@@ -117,6 +120,8 @@ export function PrivateSaleForm() {
           <DisbursementSection
             data={formData.disbursement}
             onChange={(disbursement) => setFormData({ ...formData, disbursement })}
+            disbursementType={disbursementType}
+            onDisbursementTypeChange={setDisbursementType}
           />
 
 

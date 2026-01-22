@@ -13,11 +13,12 @@ interface AssetDetailsSectionProps {
   data: AssetDetails;
   onChange: (data: AssetDetails) => void;
   loanType: LoanType;
+  hasUpload: boolean;
+  onUploadChange: (hasUpload: boolean) => void;
 }
 
-export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSectionProps) {
+export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUploadChange }: AssetDetailsSectionProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
   const { toast } = useToast();
 
   const isBoatLoan = loanType === 'boat';
@@ -36,7 +37,6 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
     }
 
     setIsUploading(true);
-    setUploadSuccess(false);
 
     try {
       const extractedData = await parsePdf(file, 'asset_details');
@@ -74,7 +74,7 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
         },
       });
 
-      setUploadSuccess(true);
+      onUploadChange(true);
       toast({
         title: 'PDF processed successfully',
         description: 'Asset details have been extracted and populated',
@@ -109,11 +109,11 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
       <h4 className="font-semibold text-sm text-muted-foreground">Vehicle Details</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="vehicleMake">Make</Label>
+          <Label htmlFor="vehicleMake">Make <span className="text-destructive">*</span></Label>
           <Input id="vehicleMake" value={data.hull.make} onChange={(e) => handleHullChange('make', e.target.value)} placeholder="e.g. Toyota" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleModel">Model</Label>
+          <Label htmlFor="vehicleModel">Model <span className="text-destructive">*</span></Label>
           <Input id="vehicleModel" value={data.hull.model} onChange={(e) => handleHullChange('model', e.target.value)} placeholder="e.g. Hilux" />
         </div>
         <div className="space-y-2">
@@ -121,35 +121,35 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
           <Input id="vehicleSeries" value={data.hull.series} onChange={(e) => handleHullChange('series', e.target.value)} placeholder="e.g. SR5" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleColour">Colour</Label>
+          <Label htmlFor="vehicleColour">Colour <span className="text-destructive">*</span></Label>
           <Input id="vehicleColour" value={data.hull.colour} onChange={(e) => handleHullChange('colour', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleBuildDate">Build Date / Year</Label>
+          <Label htmlFor="vehicleBuildDate">Build Date / Year <span className="text-destructive">*</span></Label>
           <Input id="vehicleBuildDate" value={data.hull.buildDate} onChange={(e) => handleHullChange('buildDate', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleFuelType">Fuel Type</Label>
+          <Label htmlFor="vehicleFuelType">Fuel Type <span className="text-destructive">*</span></Label>
           <Input id="vehicleFuelType" value={data.hull.fuelType} onChange={(e) => handleHullChange('fuelType', e.target.value)} placeholder="e.g. Diesel" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleRego">Registration</Label>
+          <Label htmlFor="vehicleRego">Registration <span className="text-destructive">*</span></Label>
           <Input id="vehicleRego" value={data.hull.registration} onChange={(e) => handleHullChange('registration', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleRegoExpiry">Registration Expiry</Label>
+          <Label htmlFor="vehicleRegoExpiry">Registration Expiry <span className="text-destructive">*</span></Label>
           <Input id="vehicleRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleVin">Identification Number (VIN)</Label>
+          <Label htmlFor="vehicleVin">Identification Number (VIN) <span className="text-destructive">*</span></Label>
           <Input id="vehicleVin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} placeholder="Vehicle Identification Number" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleEngineNumber">Engine Number</Label>
+          <Label htmlFor="vehicleEngineNumber">Engine Number <span className="text-destructive">*</span></Label>
           <Input id="vehicleEngineNumber" value={data.motor.engineNumber} onChange={(e) => handleMotorChange('engineNumber', e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleBodyType">Body Type</Label>
+          <Label htmlFor="vehicleBodyType">Body Type <span className="text-destructive">*</span></Label>
           <Input id="vehicleBodyType" value={data.hull.bodyType} onChange={(e) => handleHullChange('bodyType', e.target.value)} placeholder="e.g. Sedan, SUV" />
         </div>
         <div className="space-y-2">
@@ -172,11 +172,11 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
         <h4 className="font-semibold text-sm text-muted-foreground">Hull Details</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="hullMake">Make</Label>
+            <Label htmlFor="hullMake">Make <span className="text-destructive">*</span></Label>
             <Input id="hullMake" value={data.hull.make} onChange={(e) => handleHullChange('make', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullModel">Model</Label>
+            <Label htmlFor="hullModel">Model <span className="text-destructive">*</span></Label>
             <Input id="hullModel" value={data.hull.model} onChange={(e) => handleHullChange('model', e.target.value)} />
           </div>
           <div className="space-y-2">
@@ -184,23 +184,23 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
             <Input id="hullSeries" value={data.hull.series} onChange={(e) => handleHullChange('series', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullRego">Registration</Label>
+            <Label htmlFor="hullRego">Registration <span className="text-destructive">*</span></Label>
             <Input id="hullRego" value={data.hull.registration} onChange={(e) => handleHullChange('registration', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullRegoExpiry">Registration Expiry</Label>
+            <Label htmlFor="hullRegoExpiry">Registration Expiry <span className="text-destructive">*</span></Label>
             <Input id="hullRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullBuildDate">Build Date</Label>
+            <Label htmlFor="hullBuildDate">Build Date <span className="text-destructive">*</span></Label>
             <Input id="hullBuildDate" value={data.hull.buildDate} onChange={(e) => handleHullChange('buildDate', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullHin">Hull Identification Number (HIN)</Label>
+            <Label htmlFor="hullHin">Hull Identification Number (HIN) <span className="text-destructive">*</span></Label>
             <Input id="hullHin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullColour">Colour</Label>
+            <Label htmlFor="hullColour">Colour <span className="text-destructive">*</span></Label>
             <Input id="hullColour" value={data.hull.colour} onChange={(e) => handleHullChange('colour', e.target.value)} />
           </div>
         </div>
@@ -279,13 +279,13 @@ export function AssetDetailsSection({ data, onChange, loanType }: AssetDetailsSe
         {/* PDF Upload */}
         <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
           <div className="flex flex-col items-center gap-3">
-            {uploadSuccess ? (
+            {hasUpload ? (
               <CheckCircle className="h-10 w-10 text-green-500" />
             ) : (
               <Upload className="h-10 w-10 text-muted-foreground" />
             )}
             <div className="text-center">
-              <p className="font-medium">Upload Asset Document</p>
+              <p className="font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
               <p className="text-sm text-muted-foreground">
                 Upload a PDF to auto-populate {isBoatLoan ? 'watercraft' : 'vehicle'} details
               </p>

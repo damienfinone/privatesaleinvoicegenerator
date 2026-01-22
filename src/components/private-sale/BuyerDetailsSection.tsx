@@ -38,7 +38,7 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="buyerName">Buyer's Name</Label>
+            <Label htmlFor="buyerName">Buyer's Name <span className="text-destructive">*</span></Label>
             <Input
               id="buyerName"
               value={data.name}
@@ -47,7 +47,7 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="buyerContact">Buyer's Contact Number</Label>
+            <Label htmlFor="buyerContact">Buyer's Contact Number <span className="text-destructive">*</span></Label>
             <Input
               id="buyerContact"
               value={data.contactNumber}
@@ -64,7 +64,7 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="buyerAddress">Buyer's Address</Label>
+          <Label htmlFor="buyerAddress">Buyer's Address <span className="text-destructive">*</span></Label>
           <Input
             id="buyerAddress"
             value={data.address}

@@ -44,7 +44,9 @@ serve(async (req) => {
     "registrationExpiry": "",
     "buildDate": "",
     "hin": "",
-    "colour": ""
+    "colour": "",
+    "fuelType": "",
+    "bodyType": ""
   },
   "trailer": {
     "make": "",
@@ -63,6 +65,13 @@ serve(async (req) => {
     "engineNumber": ""
   }
 }
+
+Field mapping hints:
+- "hin" = VIN/Chassis number (vehicle identification number)
+- "fuelType" = Fuel type (e.g., Diesel, Petrol, Electric, Hybrid) - look for "Fuel" field
+- "bodyType" = Body shape or body type (e.g., Sedan, SUV, Prime Mover, Utility) - look for "Body shape" field
+- "buildDate" = Year or build date
+
 Only return the JSON object, no other text.`;
         break;
       

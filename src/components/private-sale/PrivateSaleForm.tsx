@@ -164,6 +164,17 @@ export function PrivateSaleForm() {
       return;
     }
     
+    // Validate invoice details (Purchase Price is mandatory)
+    const purchasePrice = parseFloat(formData.invoice.purchasePrice.replace(/[^0-9.]/g, ''));
+    if (!formData.invoice.purchasePrice.trim() || isNaN(purchasePrice) || purchasePrice <= 0) {
+      toast({
+        title: 'Invoice Details Validation Error',
+        description: 'Purchase Price is required and must be greater than zero',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // Validate disbursement section
     const disbursementError = validateDisbursement();
     if (disbursementError) {

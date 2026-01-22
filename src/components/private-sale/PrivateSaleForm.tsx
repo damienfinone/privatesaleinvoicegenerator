@@ -10,6 +10,15 @@ import { LoanTypeSelector, LoanType } from './LoanTypeSelector';
 import { InvoicePreviewDialog } from './InvoicePreviewDialog';
 import { useToast } from '@/hooks/use-toast';
 
+// Australian phone number validation
+const isValidAustralianPhone = (phone: string): boolean => {
+  if (!phone) return false;
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  const mobileRegex = /^(?:04|\+?614)\d{8}$/;
+  const landlineRegex = /^(?:0[2378]|\+?61[2378])\d{8}$/;
+  return mobileRegex.test(cleaned) || landlineRegex.test(cleaned);
+};
+
 const loanTypeConfig: Record<LoanType, { title: string; icon: React.ReactNode; description: string }> = {
   commercial: {
     title: 'Commercial Private Sale',
@@ -35,9 +44,49 @@ export function PrivateSaleForm() {
   const [disbursementType, setDisbursementType] = useState<DisbursementType | null>(null);
   const [hasVendorUpload, setHasVendorUpload] = useState(false);
   const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
+  const [hasAssetUpload, setHasAssetUpload] = useState(false);
   const { toast } = useToast();
 
   const config = loanType ? loanTypeConfig[loanType] : null;
+
+  const validateBuyerDetails = (): string | null => {
+    const { name, contactNumber, address } = formData.buyer;
+    if (!name.trim()) return "Buyer's Name is required";
+    if (!contactNumber.trim()) return "Buyer's Contact Number is required";
+    if (!isValidAustralianPhone(contactNumber)) return "Please enter a valid Australian phone number";
+    if (!address.trim()) return "Buyer's Address is required";
+    return null;
+  };
+
+  const validateAssetDetails = (): string | null => {
+    if (!hasAssetUpload) return 'Please upload an Asset Document';
+    
+    const { hull, motor } = formData.asset;
+    
+    // For vehicle loans (commercial/consumer)
+    if (loanType !== 'boat') {
+      if (!hull.make.trim()) return 'Vehicle Make is required';
+      if (!hull.model.trim()) return 'Vehicle Model is required';
+      if (!hull.colour.trim()) return 'Vehicle Colour is required';
+      if (!hull.buildDate.trim()) return 'Vehicle Build Date/Year is required';
+      if (!hull.fuelType.trim()) return 'Vehicle Fuel Type is required';
+      if (!hull.registration.trim()) return 'Vehicle Registration is required';
+      if (!hull.registrationExpiry.trim()) return 'Vehicle Registration Expiry is required';
+      if (!hull.hin.trim()) return 'Vehicle VIN is required';
+      if (!motor.engineNumber.trim()) return 'Vehicle Engine Number is required';
+      if (!hull.bodyType.trim()) return 'Vehicle Body Type is required';
+    } else {
+      // For boat loans - validate hull details
+      if (!hull.make.trim()) return 'Hull Make is required';
+      if (!hull.model.trim()) return 'Hull Model is required';
+      if (!hull.colour.trim()) return 'Hull Colour is required';
+      if (!hull.buildDate.trim()) return 'Hull Build Date is required';
+      if (!hull.registration.trim()) return 'Hull Registration is required';
+      if (!hull.registrationExpiry.trim()) return 'Hull Registration Expiry is required';
+      if (!hull.hin.trim()) return 'Hull Identification Number (HIN) is required';
+    }
+    return null;
+  };
 
   const validateDisbursement = (): string | null => {
     if (!disbursementType) {
@@ -93,6 +142,28 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
+    // Validate buyer details
+    const buyerError = validateBuyerDetails();
+    if (buyerError) {
+      toast({
+        title: 'Buyer Details Validation Error',
+        description: buyerError,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate asset details
+    const assetError = validateAssetDetails();
+    if (assetError) {
+      toast({
+        title: 'Asset Details Validation Error',
+        description: assetError,
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     // Validate disbursement section
     const disbursementError = validateDisbursement();
     if (disbursementError) {
@@ -126,6 +197,7 @@ export function PrivateSaleForm() {
     setFormData(initialFormData);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
+    setHasAssetUpload(false);
     toast({
       title: 'Form Reset',
       description: 'All fields have been cleared.',
@@ -138,6 +210,7 @@ export function PrivateSaleForm() {
     setDisbursementType(null);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
+    setHasAssetUpload(false);
   };
 
   return (
@@ -176,6 +249,8 @@ export function PrivateSaleForm() {
             data={formData.asset}
             onChange={(asset) => setFormData({ ...formData, asset })}
             loanType={loanType}
+            hasUpload={hasAssetUpload}
+            onUploadChange={setHasAssetUpload}
           />
 
           <InvoiceDetailsSection

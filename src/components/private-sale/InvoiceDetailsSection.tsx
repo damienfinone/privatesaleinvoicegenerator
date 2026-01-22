@@ -51,12 +51,13 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="purchasePrice">Purchase Price ($)</Label>
+            <Label htmlFor="purchasePrice">Purchase Price ($) <span className="text-destructive">*</span></Label>
             <Input
               id="purchasePrice"
               value={data.purchasePrice}
               onChange={(e) => handleChange('purchasePrice', e.target.value)}
               placeholder="0.00"
+              required
             />
           </div>
           <div className="space-y-2">

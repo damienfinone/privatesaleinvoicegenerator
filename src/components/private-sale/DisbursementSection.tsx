@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2, CheckCircle, User, Building2 } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { DisbursementOptions } from '@/types/privateSaleForm';
 import { parsePdf, ExtractionType } from '@/lib/pdfParser';
 import { useToast } from '@/hooks/use-toast';
@@ -15,25 +15,35 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-export type DisbursementType = 'vendor' | 'financier';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface DisbursementSectionProps {
   data: DisbursementOptions;
   onChange: (data: DisbursementOptions) => void;
-  disbursementType: DisbursementType | null;
-  onDisbursementTypeChange: (type: DisbursementType) => void;
+  isUnderFinance: boolean | null;
+  onIsUnderFinanceChange: (value: boolean) => void;
+  balanceToBeFinanced: string;
   hasVendorUpload: boolean;
   onVendorUploadChange: (uploaded: boolean) => void;
   hasFinancierUpload: boolean;
   onFinancierUploadChange: (uploaded: boolean) => void;
 }
 
+const parseAmount = (value: string): number => {
+  const n = parseFloat(value.replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? 0 : n;
+};
+
+const formatCurrency = (value: number): string => {
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(value);
+};
+
 export function DisbursementSection({ 
   data, 
   onChange, 
-  disbursementType, 
-  onDisbursementTypeChange,
+  isUnderFinance,
+  onIsUnderFinanceChange,
+  balanceToBeFinanced,
   hasVendorUpload,
   onVendorUploadChange,
   hasFinancierUpload,
@@ -44,14 +54,20 @@ export function DisbursementSection({
   const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
   const { toast } = useToast();
 
-  // Check if both bank and BPAY details are complete
+  const balance = parseAmount(balanceToBeFinanced);
+  const amountPayable = parseAmount(data.bpay.amount);
+  
+  // Calculate if vendor payment is also needed (when Amount Payable < Balance)
+  const needsVendorPayment = isUnderFinance === true && amountPayable > 0 && amountPayable < balance;
+  const vendorAmount = needsVendorPayment ? balance - amountPayable : balance;
+
+  // Check if both bank and BPAY details are complete (for financier)
   const hasBankDetails = data.payoutBank.accountName && data.payoutBank.bsbNumber && 
                          data.payoutBank.accountNumber && data.payoutBank.bank;
   const hasBpayDetails = data.bpay.billerCode && data.bpay.referenceNumber;
 
   const handleSelectPaymentMethod = (method: 'bank' | 'bpay') => {
     if (method === 'bank') {
-      // Clear BPAY fields
       onChange({
         ...data,
         bpay: {
@@ -65,7 +81,6 @@ export function DisbursementSection({
         description: 'BPAY fields have been cleared.',
       });
     } else {
-      // Clear bank account fields
       onChange({
         ...data,
         payoutBank: {
@@ -86,7 +101,7 @@ export function DisbursementSection({
 
   const handleFileUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    option: 'bankAccount' | 'payoutBank' | 'bpay',
+    option: 'bankAccount' | 'payoutBank',
     extractionType: ExtractionType
   ) => {
     const file = e.target.files?.[0];
@@ -119,8 +134,6 @@ export function DisbursementSection({
         });
         onVendorUploadChange(true);
       } else if (option === 'payoutBank') {
-        // Populate both payoutBank and bpay fields from the payout letter
-        // The payout letter may contain bank transfer OR BPAY details
         onChange({
           ...data,
           payoutBank: {
@@ -134,27 +147,14 @@ export function DisbursementSection({
             ...data.bpay,
             billerCode: extractedData.billerCode || data.bpay.billerCode,
             referenceNumber: extractedData.referenceNumber || data.bpay.referenceNumber,
-            // Also populate BPAY amount from payout letter
             amount: extractedData.payoutAmount || data.bpay.amount,
           },
         });
         onFinancierUploadChange(true);
-      } else if (option === 'bpay') {
-        onChange({
-          ...data,
-          bpay: {
-            accountName: extractedData.accountName || data.bpay.accountName,
-            billerCode: extractedData.billerCode || data.bpay.billerCode,
-            referenceNumber: extractedData.referenceNumber || data.bpay.referenceNumber,
-            bank: extractedData.bank || data.bpay.bank,
-            amount: extractedData.payoutAmount || data.bpay.amount,
-          },
-        });
       }
 
       setSuccessOption(option);
       
-      // Build a more accurate success message
       const fieldsPopulated: string[] = [];
       if (extractedData.accountName) fieldsPopulated.push('Account Name');
       if (extractedData.bsbNumber) fieldsPopulated.push('BSB');
@@ -199,7 +199,6 @@ export function DisbursementSection({
 
   // Normalize BSB: remove spaces/hyphens and validate
   const normalizeBsb = (value: string) => value.replace(/[\s\-]/g, '');
-  const isValidBsb = (value: string) => /^\d{6}$/.test(normalizeBsb(value));
   const getBsbError = (value: string) => {
     if (!value) return null;
     const normalized = normalizeBsb(value);
@@ -209,7 +208,6 @@ export function DisbursementSection({
   };
 
   const handleBankAccountChange = (field: keyof typeof data.bankAccount, value: string) => {
-    // Auto-normalize BSB on change
     const finalValue = field === 'bsbNumber' ? normalizeBsb(value) : value;
     onChange({ ...data, bankAccount: { ...data.bankAccount, [field]: finalValue } });
   };
@@ -219,7 +217,6 @@ export function DisbursementSection({
     const newData = { ...data, payoutBank: { ...data.payoutBank, [field]: finalValue } };
     onChange(newData);
     
-    // Check if both are now complete after this change
     const updatedBankDetails = newData.payoutBank.accountName && newData.payoutBank.bsbNumber && 
                                newData.payoutBank.accountNumber && newData.payoutBank.bank;
     if (updatedBankDetails && hasBpayDetails) {
@@ -231,7 +228,6 @@ export function DisbursementSection({
     const newData = { ...data, bpay: { ...data.bpay, [field]: value } };
     onChange(newData);
     
-    // Check if both are now complete after this change (only for billerCode and referenceNumber)
     if (field === 'billerCode' || field === 'referenceNumber') {
       const updatedBpayDetails = (field === 'billerCode' ? value : newData.bpay.billerCode) && 
                                  (field === 'referenceNumber' ? value : newData.bpay.referenceNumber);
@@ -247,7 +243,7 @@ export function DisbursementSection({
     inputId,
     description = "Upload PDF to auto-populate"
   }: { 
-    option: 'bankAccount' | 'payoutBank' | 'bpay'; 
+    option: 'bankAccount' | 'payoutBank'; 
     extractionType: ExtractionType;
     inputId: string;
     description?: string;
@@ -293,91 +289,38 @@ export function DisbursementSection({
         <CardTitle className="text-lg">Disbursement Options for Settlement</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Type Selector Buttons */}
-        <div className="flex gap-4">
-          <Button
-            type="button"
-            variant={disbursementType === 'vendor' ? 'default' : 'outline'}
-            className="flex-1 h-16"
-            onClick={() => onDisbursementTypeChange('vendor')}
-          >
-            <User className="mr-2 h-5 w-5" />
-            Vendor
-          </Button>
-          <Button
-            type="button"
-            variant={disbursementType === 'financier' ? 'default' : 'outline'}
-            className="flex-1 h-16"
-            onClick={() => onDisbursementTypeChange('financier')}
-          >
-            <Building2 className="mr-2 h-5 w-5" />
-            Financier
-          </Button>
+        {/* Is Asset Under Finance? */}
+        <div className="space-y-2">
+          <Label className="text-base font-medium">Is the asset currently under finance? <span className="text-destructive">*</span></Label>
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant={isUnderFinance === false ? 'default' : 'outline'}
+              className="flex-1 h-12"
+              onClick={() => onIsUnderFinanceChange(false)}
+            >
+              No
+            </Button>
+            <Button
+              type="button"
+              variant={isUnderFinance === true ? 'default' : 'outline'}
+              className="flex-1 h-12"
+              onClick={() => onIsUnderFinanceChange(true)}
+            >
+              Yes
+            </Button>
+          </div>
         </div>
 
-        {/* Vendor: Bank Account Details */}
-        {disbursementType === 'vendor' && (
-          <div className="space-y-4">
-            <h4 className="font-semibold">Vendor Bank Account Details</h4>
-            <UploadButton 
-              option="bankAccount" 
-              extractionType="bank_account" 
-              inputId="bankAccountPdf" 
-              description="Upload proof of vendor's nominated bank account (fields below will be auto-populated)" 
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ba_accountName">Account Name</Label>
-                <Input
-                  id="ba_accountName"
-                  value={data.bankAccount.accountName}
-                  onChange={(e) => handleBankAccountChange('accountName', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ba_bsb">BSB Number</Label>
-                <Input
-                  id="ba_bsb"
-                  value={data.bankAccount.bsbNumber}
-                  onChange={(e) => handleBankAccountChange('bsbNumber', e.target.value)}
-                  maxLength={6}
-                  placeholder="000000"
-                  className={getBsbError(data.bankAccount.bsbNumber) ? 'border-destructive' : ''}
-                />
-                {getBsbError(data.bankAccount.bsbNumber) && (
-                  <p className="text-xs text-destructive">{getBsbError(data.bankAccount.bsbNumber)}</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ba_accountNumber">Account Number</Label>
-                <Input
-                  id="ba_accountNumber"
-                  value={data.bankAccount.accountNumber}
-                  onChange={(e) => handleBankAccountChange('accountNumber', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ba_bank">Bank Name</Label>
-                <Input
-                  id="ba_bank"
-                  value={data.bankAccount.bank}
-                  onChange={(e) => handleBankAccountChange('bank', e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Financier: Payout Letter */}
-        {disbursementType === 'financier' && (
-          <div className="space-y-4">
-            <h4 className="font-semibold">Payout Letter Details</h4>
+        {/* Financier Section - Only when asset IS under finance */}
+        {isUnderFinance === true && (
+          <div className="space-y-4 border-t pt-4">
+            <h4 className="font-semibold">Financier Payout Details</h4>
             <UploadButton 
               option="payoutBank" 
               extractionType="payout_letter_bank" 
               inputId="payoutBankPdf" 
-              description="Upload payout letter from another financier (fields below will be auto-populated)" 
+              description="Upload payout letter from the current financier (fields below will be auto-populated)" 
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -439,11 +382,84 @@ export function DisbursementSection({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="bpay_amount">Amount Payable</Label>
+                <Label htmlFor="bpay_amount">Amount Payable <span className="text-destructive">*</span></Label>
                 <Input
                   id="bpay_amount"
                   value={data.bpay.amount}
                   onChange={(e) => handleBpayChange('amount', e.target.value)}
+                  placeholder="$0.00"
+                />
+              </div>
+            </div>
+
+            {/* Alert when vendor payment is also needed */}
+            {needsVendorPayment && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  The Amount Payable ({formatCurrency(amountPayable)}) is less than the Balance to be Financed ({formatCurrency(balance)}). 
+                  The remaining {formatCurrency(vendorAmount)} will be paid to the vendor. Please provide vendor bank details below.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
+
+        {/* Vendor Section - When NOT under finance OR when there's a remaining balance */}
+        {(isUnderFinance === false || needsVendorPayment) && (
+          <div className="space-y-4 border-t pt-4">
+            <h4 className="font-semibold">
+              Vendor Bank Account Details
+              {needsVendorPayment && (
+                <span className="font-normal text-muted-foreground ml-2">
+                  (Remaining amount: {formatCurrency(vendorAmount)})
+                </span>
+              )}
+            </h4>
+            <UploadButton 
+              option="bankAccount" 
+              extractionType="bank_account" 
+              inputId="bankAccountPdf" 
+              description="Upload proof of vendor's nominated bank account (fields below will be auto-populated)" 
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ba_accountName">Account Name <span className="text-destructive">*</span></Label>
+                <Input
+                  id="ba_accountName"
+                  value={data.bankAccount.accountName}
+                  onChange={(e) => handleBankAccountChange('accountName', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ba_bsb">BSB Number <span className="text-destructive">*</span></Label>
+                <Input
+                  id="ba_bsb"
+                  value={data.bankAccount.bsbNumber}
+                  onChange={(e) => handleBankAccountChange('bsbNumber', e.target.value)}
+                  maxLength={6}
+                  placeholder="000000"
+                  className={getBsbError(data.bankAccount.bsbNumber) ? 'border-destructive' : ''}
+                />
+                {getBsbError(data.bankAccount.bsbNumber) && (
+                  <p className="text-xs text-destructive">{getBsbError(data.bankAccount.bsbNumber)}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ba_accountNumber">Account Number <span className="text-destructive">*</span></Label>
+                <Input
+                  id="ba_accountNumber"
+                  value={data.bankAccount.accountNumber}
+                  onChange={(e) => handleBankAccountChange('accountNumber', e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="ba_bank">Bank Name <span className="text-destructive">*</span></Label>
+                <Input
+                  id="ba_bank"
+                  value={data.bankAccount.bank}
+                  onChange={(e) => handleBankAccountChange('bank', e.target.value)}
                 />
               </div>
             </div>

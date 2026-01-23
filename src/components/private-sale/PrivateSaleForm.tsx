@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Ship, Briefcase, User, Download, Eye } from 'lucide-react';
+import { Ship, Briefcase, User, Eye } from 'lucide-react';
 import { PrivateSaleFormData, initialFormData } from '@/types/privateSaleForm';
 import { BuyerDetailsSection } from './BuyerDetailsSection';
 import { AssetDetailsSection } from './AssetDetailsSection';
 import { InvoiceDetailsSection } from './InvoiceDetailsSection';
-import { DisbursementSection, DisbursementType } from './DisbursementSection';
+import { DisbursementSection } from './DisbursementSection';
 import { LoanTypeSelector, LoanType } from './LoanTypeSelector';
 import { InvoicePreviewDialog } from './InvoicePreviewDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -42,7 +42,7 @@ export function PrivateSaleForm() {
   const [division, setDivision] = useState<'consumer' | 'commercial' | null>(null);
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [disbursementType, setDisbursementType] = useState<DisbursementType | null>(null);
+  const [isUnderFinance, setIsUnderFinance] = useState<boolean | null>(null);
   const [hasVendorUpload, setHasVendorUpload] = useState(false);
   const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
   const [hasAssetUpload, setHasAssetUpload] = useState(false);
@@ -116,27 +116,16 @@ export function PrivateSaleForm() {
   };
 
   const validateDisbursement = (): string | null => {
-    if (!disbursementType) {
-      return 'Please select a disbursement type (Vendor or Financier)';
+    if (isUnderFinance === null) {
+      return 'Please answer whether the asset is currently under finance';
     }
 
-    if (disbursementType === 'vendor') {
-      // Vendor requires: all 4 bank fields + upload
-      if (!hasVendorUpload) {
-        return 'Please upload proof of vendor\'s nominated bank account';
-      }
-      const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.bankAccount;
-      if (!accountName || !bsbNumber || !accountNumber || !bank) {
-        return 'Please fill in all vendor bank account fields (Account Name, BSB, Account Number, Bank)';
-      }
-      // Also validate BSB format
-      if (!/^\d{6}$/.test(bsbNumber)) {
-        return 'Vendor BSB must be exactly 6 digits';
-      }
-    }
+    const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
+    const amountPayable = parseFloat(formData.disbursement.bpay.amount.replace(/[^0-9.]/g, '')) || 0;
+    const needsVendorPayment = isUnderFinance && amountPayable > 0 && amountPayable < balance;
 
-    if (disbursementType === 'financier') {
-      // Financier requires: upload + Amount Payable + (BPAY fields OR bank fields)
+    // If under finance, validate financier details
+    if (isUnderFinance) {
       if (!hasFinancierUpload) {
         return 'Please upload the payout letter from the financier';
       }
@@ -145,19 +134,32 @@ export function PrivateSaleForm() {
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.payoutBank;
       
       if (!bpayAmount) {
-        return 'Please enter the Amount Payable';
+        return 'Please enter the Amount Payable from the payout letter';
       }
 
       const hasBpayDetails = billerCode && referenceNumber;
       const hasBankDetails = accountName && bsbNumber && accountNumber && bank;
 
       if (!hasBpayDetails && !hasBankDetails) {
-        return 'Please fill in either BPAY details (Biller Code + Reference) OR bank account details (all 4 fields)';
+        return 'Please fill in either BPAY details (Biller Code + Reference) OR bank account details (all 4 fields) for the financier';
       }
 
-      // Validate BSB if bank details are provided
       if (hasBankDetails && !/^\d{6}$/.test(bsbNumber)) {
-        return 'Payout BSB must be exactly 6 digits';
+        return 'Financier BSB must be exactly 6 digits';
+      }
+    }
+
+    // Validate vendor details if NOT under finance OR if there's remaining balance
+    if (!isUnderFinance || needsVendorPayment) {
+      if (!hasVendorUpload) {
+        return 'Please upload proof of vendor\'s nominated bank account';
+      }
+      const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.bankAccount;
+      if (!accountName || !bsbNumber || !accountNumber || !bank) {
+        return 'Please fill in all vendor bank account fields (Account Name, BSB, Account Number, Bank)';
+      }
+      if (!/^\d{6}$/.test(bsbNumber)) {
+        return 'Vendor BSB must be exactly 6 digits';
       }
     }
 
@@ -213,26 +215,26 @@ export function PrivateSaleForm() {
       return;
     }
     
-    // Validate balance only for Financier option
-    if (disbursementType === 'financier') {
+    // Validate: if under finance and amount payable > balance, show error
+    if (isUnderFinance) {
       const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
       const amountPayable = parseFloat(formData.disbursement.bpay.amount.replace(/[^0-9.]/g, '')) || 0;
       
-      if (Math.abs(balance - amountPayable) > 0.01) {
+      if (amountPayable > balance) {
         toast({
-          title: 'Disbursement Mismatch',
-          description: 'Amount Payable as listed in the payout letter does not match the Balance to be Financed. Please review these sections.',
+          title: 'Amount Payable Exceeds Balance',
+          description: 'The Amount Payable cannot be greater than the Balance to be Financed.',
           variant: 'destructive',
         });
         return;
       }
     }
-    
     setPreviewOpen(true);
   };
 
   const handleReset = () => {
     setFormData(initialFormData);
+    setIsUnderFinance(null);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
@@ -250,7 +252,7 @@ export function PrivateSaleForm() {
     if (newDivision !== division) {
       setDivision(newDivision);
       setFormData(initialFormData);
-      setDisbursementType(null);
+      setIsUnderFinance(null);
       setHasVendorUpload(false);
       setHasFinancierUpload(false);
       setHasAssetUpload(false);
@@ -263,7 +265,7 @@ export function PrivateSaleForm() {
     setLoanType(null);
     setDivision(null);
     setFormData(initialFormData);
-    setDisbursementType(null);
+    setIsUnderFinance(null);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
@@ -310,8 +312,9 @@ export function PrivateSaleForm() {
           <DisbursementSection
             data={formData.disbursement}
             onChange={(disbursement) => setFormData({ ...formData, disbursement })}
-            disbursementType={disbursementType}
-            onDisbursementTypeChange={setDisbursementType}
+            isUnderFinance={isUnderFinance}
+            onIsUnderFinanceChange={setIsUnderFinance}
+            balanceToBeFinanced={formData.invoice.balanceToBeFinanced}
             hasVendorUpload={hasVendorUpload}
             onVendorUploadChange={setHasVendorUpload}
             hasFinancierUpload={hasFinancierUpload}
@@ -336,7 +339,7 @@ export function PrivateSaleForm() {
             onOpenChange={setPreviewOpen}
             formData={formData}
             loanType={loanType}
-            disbursementType={disbursementType}
+            isUnderFinance={isUnderFinance}
           />
         </form>
       )}

@@ -241,37 +241,30 @@ export function DisbursementSection({
     option, 
     extractionType, 
     inputId,
-    description = "Upload PDF to auto-populate"
+    title,
+    subtitle = "Fields below will be auto-populated"
   }: { 
     option: 'bankAccount' | 'payoutBank'; 
     extractionType: ExtractionType;
     inputId: string;
-    description?: string;
+    title: string;
+    subtitle?: string;
   }) => (
-    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4">
-      <div className="flex items-center gap-4">
-        {successOption === option ? (
-          <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
-        ) : (
-          <Upload className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-        )}
-        <div className="flex-1">
-          <p className="text-sm font-medium">{description}</p>
+    <Label htmlFor={inputId} className="cursor-pointer block">
+      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors">
+        <div className="flex items-center gap-3">
+          {successOption === option ? (
+            <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+          ) : uploadingOption === option ? (
+            <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
+          ) : (
+            <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+          )}
+          <div className="flex-1">
+            <p className="text-sm font-medium">{title}</p>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
         </div>
-        <Label htmlFor={inputId} className="cursor-pointer">
-          <Button variant="outline" size="sm" disabled={uploadingOption === option} asChild>
-            <span>
-              {uploadingOption === option ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Choose PDF'
-              )}
-            </span>
-          </Button>
-        </Label>
         <Input
           id={inputId}
           type="file"
@@ -280,7 +273,7 @@ export function DisbursementSection({
           className="hidden"
         />
       </div>
-    </div>
+    </Label>
   );
 
   return (
@@ -320,7 +313,7 @@ export function DisbursementSection({
               option="payoutBank" 
               extractionType="payout_letter_bank" 
               inputId="payoutBankPdf" 
-              description="Upload payout letter from the current financier (fields below will be auto-populated)" 
+              title="Upload payout letter from the current financier"
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -420,7 +413,7 @@ export function DisbursementSection({
               option="bankAccount" 
               extractionType="bank_account" 
               inputId="bankAccountPdf" 
-              description="Upload proof of vendor's nominated bank account (fields below will be auto-populated)" 
+              title="Upload proof of vendor's nominated bank account"
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

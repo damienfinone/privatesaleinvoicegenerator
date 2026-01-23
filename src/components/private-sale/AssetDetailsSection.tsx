@@ -277,33 +277,21 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
       </CardHeader>
       <CardContent className="space-y-6">
         {/* PDF Upload */}
-        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-          <div className="flex flex-col items-center gap-3">
-            {hasUpload ? (
-              <CheckCircle className="h-10 w-10 text-green-500" />
-            ) : (
-              <Upload className="h-10 w-10 text-muted-foreground" />
-            )}
-            <div className="text-center">
-              <p className="font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
-              <p className="text-sm text-muted-foreground">
-                Upload a PDF to auto-populate {isBoatLoan ? 'watercraft' : 'vehicle'} details
-              </p>
+        <Label htmlFor="assetPdf" className="cursor-pointer block">
+          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors">
+            <div className="flex items-center gap-3">
+              {hasUpload ? (
+                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+              ) : isUploading ? (
+                <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
+              ) : (
+                <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+              )}
+              <div className="flex-1">
+                <p className="text-sm font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
+                <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+              </div>
             </div>
-            <Label htmlFor="assetPdf" className="cursor-pointer">
-              <Button variant="outline" disabled={isUploading} asChild>
-                <span>
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    'Choose PDF'
-                  )}
-                </span>
-              </Button>
-            </Label>
             <Input
               id="assetPdf"
               type="file"
@@ -312,7 +300,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
               className="hidden"
             />
           </div>
-        </div>
+        </Label>
 
         {isBoatLoan ? renderBoatFields() : renderVehicleFields()}
       </CardContent>

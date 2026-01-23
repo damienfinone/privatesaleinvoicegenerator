@@ -394,9 +394,9 @@ export function DisbursementSection({
 
             {/* Alert when vendor payment is also needed */}
             {needsVendorPayment && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+              <Alert className="bg-amber-50 border-amber-300 text-amber-900">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-amber-800 font-medium">
                   The Amount Payable ({formatCurrency(amountPayable)}) is less than the Balance to be Financed ({formatCurrency(balance)}). 
                   The remaining {formatCurrency(vendorAmount)} will be paid to the vendor. Please provide vendor bank details below.
                 </AlertDescription>

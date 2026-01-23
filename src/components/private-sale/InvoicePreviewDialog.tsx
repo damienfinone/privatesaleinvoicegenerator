@@ -32,7 +32,23 @@ const fmt = (v: string) => {
 const fmtDate = (v: string) => {
   if (!v) return '—';
   try {
-    return new Date(v).toLocaleDateString('en-AU');
+    // Check if already in AU format (DD/MM/YYYY)
+    const auMatch = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (auMatch) {
+      return v; // Already formatted correctly
+    }
+    // Try ISO format (YYYY-MM-DD)
+    const isoMatch = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (isoMatch) {
+      const [, year, month, day] = isoMatch;
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+    // Fallback: try parsing as Date
+    const date = new Date(v);
+    if (!isNaN(date.getTime())) {
+      return date.toLocaleDateString('en-AU');
+    }
+    return v;
   } catch {
     return v;
   }

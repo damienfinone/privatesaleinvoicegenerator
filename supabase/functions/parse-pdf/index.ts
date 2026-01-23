@@ -98,7 +98,8 @@ Only return the JSON object, no other text.`;
   "payoutAmount": ""
 }
 Look for:
-- Bank transfer details: BSB, account number, account name
+- accountName: The name of the lender/financier who issued the payout letter. Usually found in the document header, letterhead, logo area, or footer (e.g., "Macquarie Leasing", "ANZ", "Westpac", "Finance One", etc.)
+- Bank transfer details: BSB, account number
 - BPAY details: biller code (usually 4-6 digits), reference number (customer reference)
 - Payout/settlement amount: the total amount to pay
 Only return the JSON object, no other text.`;

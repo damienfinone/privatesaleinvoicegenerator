@@ -48,6 +48,7 @@ export function PrivateSaleForm() {
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isUnderFinance, setIsUnderFinance] = useState<boolean | null>(null);
+  const [trailerIncluded, setTrailerIncluded] = useState<boolean | null>(null);
   const [hasVendorUpload, setHasVendorUpload] = useState(false);
   const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
   const [hasAssetUpload, setHasAssetUpload] = useState(false);
@@ -115,15 +116,20 @@ export function PrivateSaleForm() {
       if (!hull.identificationType.trim()) return 'Hull Identification Type is required';
       if (!hull.hin.trim()) return 'Hull Identification Number is required';
       
-      // Validate trailer details (all mandatory for watercraft)
-      const { trailer, motor } = formData.asset;
-      if (!trailer.make.trim()) return 'Trailer Make is required';
-      if (!trailer.model.trim()) return 'Trailer Model is required';
-      if (!trailer.registration.trim()) return 'Trailer Registration is required';
-      if (!trailer.buildDate.trim()) return 'Trailer Build Date is required';
-      if (!trailer.vin.trim()) return 'Trailer VIN is required';
+      // Validate trailer details only if trailer is included
+      if (trailerIncluded === null) return 'Please answer whether a trailer is included';
+      
+      if (trailerIncluded) {
+        const { trailer } = formData.asset;
+        if (!trailer.make.trim()) return 'Trailer Make is required';
+        if (!trailer.model.trim()) return 'Trailer Model is required';
+        if (!trailer.registration.trim()) return 'Trailer Registration is required';
+        if (!trailer.buildDate.trim()) return 'Trailer Build Date is required';
+        if (!trailer.vin.trim()) return 'Trailer VIN is required';
+      }
       
       // Validate motor details (mandatory for watercraft)
+      const { motor } = formData.asset;
       if (!motor.make.trim()) return 'Motor Make is required';
       if (!motor.model.trim()) return 'Motor Model is required';
       if (!motor.buildDate.trim()) return 'Motor Build Date is required';
@@ -254,6 +260,7 @@ export function PrivateSaleForm() {
     setLoanType(null);
     setDivision(null);
     setIsUnderFinance(null);
+    setTrailerIncluded(null);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
@@ -272,6 +279,7 @@ export function PrivateSaleForm() {
       setDivision(newDivision);
       setFormData(initialFormData);
       setIsUnderFinance(null);
+      setTrailerIncluded(null);
       setHasVendorUpload(false);
       setHasFinancierUpload(false);
       setHasAssetUpload(false);
@@ -285,6 +293,7 @@ export function PrivateSaleForm() {
     setDivision(null);
     setFormData(initialFormData);
     setIsUnderFinance(null);
+    setTrailerIncluded(null);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
@@ -321,6 +330,8 @@ export function PrivateSaleForm() {
             loanType={loanType}
             hasUpload={hasAssetUpload}
             onUploadChange={setHasAssetUpload}
+            trailerIncluded={trailerIncluded}
+            onTrailerIncludedChange={setTrailerIncluded}
           />
 
           <InvoiceDetailsSection
@@ -359,6 +370,7 @@ export function PrivateSaleForm() {
             formData={formData}
             loanType={loanType}
             isUnderFinance={isUnderFinance}
+            trailerIncluded={trailerIncluded}
           />
         </form>
       )}

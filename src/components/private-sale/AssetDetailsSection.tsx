@@ -15,9 +15,11 @@ interface AssetDetailsSectionProps {
   loanType: LoanType;
   hasUpload: boolean;
   onUploadChange: (hasUpload: boolean) => void;
+  trailerIncluded: boolean | null;
+  onTrailerIncludedChange: (included: boolean) => void;
 }
 
-export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUploadChange }: AssetDetailsSectionProps) {
+export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUploadChange, trailerIncluded, onTrailerIncludedChange }: AssetDetailsSectionProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
@@ -216,37 +218,6 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         </div>
       </div>
 
-      {/* Trailer Details */}
-      <div className="space-y-4">
-        <h4 className="font-semibold text-sm text-muted-foreground">Trailer Details</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="trailerMake">Make <span className="text-destructive">*</span></Label>
-            <Input id="trailerMake" value={data.trailer.make} onChange={(e) => handleTrailerChange('make', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trailerModel">Model <span className="text-destructive">*</span></Label>
-            <Input id="trailerModel" value={data.trailer.model} onChange={(e) => handleTrailerChange('model', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trailerRego">Registration <span className="text-destructive">*</span></Label>
-            <Input id="trailerRego" value={data.trailer.registration} onChange={(e) => handleTrailerChange('registration', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trailerRegoExpiry">Registration Expiry</Label>
-            <Input id="trailerRegoExpiry" value={data.trailer.registrationExpiry} onChange={(e) => handleTrailerChange('registrationExpiry', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trailerBuildDate">Build Date <span className="text-destructive">*</span></Label>
-            <Input id="trailerBuildDate" value={data.trailer.buildDate} onChange={(e) => handleTrailerChange('buildDate', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trailerVin">VIN <span className="text-destructive">*</span></Label>
-            <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value)} />
-          </div>
-        </div>
-      </div>
-
       {/* Motor Details */}
       <div className="space-y-4">
         <h4 className="font-semibold text-sm text-muted-foreground">Motor Details</h4>
@@ -272,6 +243,68 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Input id="motorEngineNumber" value={data.motor.engineNumber} onChange={(e) => handleMotorChange('engineNumber', e.target.value)} />
           </div>
         </div>
+      </div>
+
+      {/* Trailer Included Question */}
+      <div className="space-y-4">
+        <h4 className="font-semibold text-sm text-muted-foreground">Trailer Details</h4>
+        <div className="flex items-center gap-4">
+          <Label>Trailer included? <span className="text-destructive">*</span></Label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => onTrailerIncludedChange(true)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                trailerIncluded === true
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              Yes
+            </button>
+            <button
+              type="button"
+              onClick={() => onTrailerIncludedChange(false)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                trailerIncluded === false
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              }`}
+            >
+              No
+            </button>
+          </div>
+        </div>
+
+        {/* Trailer Fields - only show if trailer included */}
+        {trailerIncluded === true && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="trailerMake">Make <span className="text-destructive">*</span></Label>
+              <Input id="trailerMake" value={data.trailer.make} onChange={(e) => handleTrailerChange('make', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trailerModel">Model <span className="text-destructive">*</span></Label>
+              <Input id="trailerModel" value={data.trailer.model} onChange={(e) => handleTrailerChange('model', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trailerRego">Registration <span className="text-destructive">*</span></Label>
+              <Input id="trailerRego" value={data.trailer.registration} onChange={(e) => handleTrailerChange('registration', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trailerRegoExpiry">Registration Expiry</Label>
+              <Input id="trailerRegoExpiry" value={data.trailer.registrationExpiry} onChange={(e) => handleTrailerChange('registrationExpiry', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trailerBuildDate">Build Date <span className="text-destructive">*</span></Label>
+              <Input id="trailerBuildDate" value={data.trailer.buildDate} onChange={(e) => handleTrailerChange('buildDate', e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="trailerVin">VIN <span className="text-destructive">*</span></Label>
+              <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value)} />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

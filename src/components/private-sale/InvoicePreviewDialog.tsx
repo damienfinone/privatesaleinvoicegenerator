@@ -20,6 +20,7 @@ interface InvoicePreviewDialogProps {
   formData: PrivateSaleFormData;
   loanType: LoanType;
   isUnderFinance: boolean | null;
+  trailerIncluded?: boolean | null;
 }
 
 const fmt = (v: string) => {
@@ -182,7 +183,7 @@ function ConsumerContent({ data, isUnderFinance }: { data: PrivateSaleFormData; 
   );
 }
 
-function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData; isUnderFinance: boolean | null }) {
+function WatercraftContent({ data, isUnderFinance, trailerIncluded }: { data: PrivateSaleFormData; isUnderFinance: boolean | null; trailerIncluded?: boolean | null }) {
   return (
     <>
       <Section title="Buyer's Details">
@@ -203,16 +204,18 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
         </div>
       </Section>
 
-      <Section title="Trailer Details">
-        <div className="grid grid-cols-2 gap-x-4">
-          <Field label="Make" value={data.asset.trailer.make} />
-          <Field label="Model" value={data.asset.trailer.model} />
-          <Field label="VIN" value={data.asset.trailer.vin} />
-          <Field label="Registration" value={data.asset.trailer.registration} />
-          <Field label="Registration Expiry" value={fmtDate(data.asset.trailer.registrationExpiry)} />
-          <Field label="Build Date" value={data.asset.trailer.buildDate || '—'} />
-        </div>
-      </Section>
+      {trailerIncluded && (
+        <Section title="Trailer Details">
+          <div className="grid grid-cols-2 gap-x-4">
+            <Field label="Make" value={data.asset.trailer.make} />
+            <Field label="Model" value={data.asset.trailer.model} />
+            <Field label="VIN" value={data.asset.trailer.vin} />
+            <Field label="Registration" value={data.asset.trailer.registration} />
+            <Field label="Registration Expiry" value={fmtDate(data.asset.trailer.registrationExpiry)} />
+            <Field label="Build Date" value={data.asset.trailer.buildDate || '—'} />
+          </div>
+        </Section>
+      )}
 
       <Section title="Motor Details">
         <div className="grid grid-cols-2 gap-x-4">
@@ -235,7 +238,7 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
   );
 }
 
-export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, isUnderFinance }: InvoicePreviewDialogProps) {
+export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, isUnderFinance, trailerIncluded }: InvoicePreviewDialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
@@ -301,7 +304,7 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, i
 
             {/* Content based on loan type */}
             {isWatercraft ? (
-              <WatercraftContent data={formData} isUnderFinance={isUnderFinance} />
+              <WatercraftContent data={formData} isUnderFinance={isUnderFinance} trailerIncluded={trailerIncluded} />
             ) : (
               <ConsumerContent data={formData} isUnderFinance={isUnderFinance} />
             )}

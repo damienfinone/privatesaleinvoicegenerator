@@ -58,6 +58,24 @@ export function PrivateSaleForm() {
     return null;
   };
 
+  // Validate AU date format (DD/MM/YYYY)
+  const isValidAuDate = (dateStr: string): boolean => {
+    if (!dateStr) return false;
+    const auMatch = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (auMatch) {
+      const [, day, month, year] = auMatch;
+      const d = parseInt(day, 10);
+      const m = parseInt(month, 10);
+      const y = parseInt(year, 10);
+      if (m < 1 || m > 12 || d < 1 || d > 31 || y < 1900) return false;
+      return true;
+    }
+    // Also accept ISO format (YYYY-MM-DD)
+    const isoMatch = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (isoMatch) return true;
+    return false;
+  };
+
   const validateAssetDetails = (): string | null => {
     if (!hasAssetUpload) return 'Please upload an Asset Document';
     
@@ -72,6 +90,7 @@ export function PrivateSaleForm() {
       if (!hull.fuelType.trim()) return 'Vehicle Fuel Type is required';
       if (!hull.registration.trim()) return 'Vehicle Registration is required';
       if (!hull.registrationExpiry.trim()) return 'Vehicle Registration Expiry is required';
+      if (!isValidAuDate(hull.registrationExpiry)) return 'Registration Expiry must be a valid date (DD/MM/YYYY)';
       if (!hull.hin.trim()) return 'Vehicle VIN is required';
       if (!motor.engineNumber.trim()) return 'Vehicle Engine Number is required';
       if (!hull.bodyType.trim()) return 'Vehicle Body Type is required';
@@ -83,6 +102,7 @@ export function PrivateSaleForm() {
       if (!hull.buildDate.trim()) return 'Hull Build Date is required';
       if (!hull.registration.trim()) return 'Hull Registration is required';
       if (!hull.registrationExpiry.trim()) return 'Hull Registration Expiry is required';
+      if (!isValidAuDate(hull.registrationExpiry)) return 'Hull Registration Expiry must be a valid date (DD/MM/YYYY)';
       if (!hull.hin.trim()) return 'Hull Identification Number (HIN) is required';
     }
     return null;

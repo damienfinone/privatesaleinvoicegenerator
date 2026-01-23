@@ -104,7 +104,7 @@ export function LoanTypeSelector({
               type="button"
               onClick={() => handleAssetTypeSelect(option.value)}
               className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all",
+                "flex items-center justify-center gap-3 px-4 py-3 rounded-lg border-2 transition-all",
                 "hover:border-primary hover:bg-primary/5",
                 currentAssetType === option.value
                   ? "border-primary bg-primary/10 text-primary"

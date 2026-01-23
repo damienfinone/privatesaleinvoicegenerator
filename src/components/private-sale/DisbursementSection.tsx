@@ -50,9 +50,15 @@ export function DisbursementSection({
   onFinancierUploadChange
 }: DisbursementSectionProps) {
   const [uploadingOption, setUploadingOption] = useState<string | null>(null);
-  const [successOption, setSuccessOption] = useState<string | null>(null);
   const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
   const { toast } = useToast();
+
+  // Derive success state from props instead of local state
+  const getSuccessOption = (option: 'bankAccount' | 'payoutBank') => {
+    if (option === 'bankAccount') return hasVendorUpload;
+    if (option === 'payoutBank') return hasFinancierUpload;
+    return false;
+  };
 
   const balance = parseAmount(balanceToBeFinanced);
   const amountPayable = parseAmount(data.bpay.amount);
@@ -117,7 +123,6 @@ export function DisbursementSection({
     }
 
     setUploadingOption(option);
-    setSuccessOption(null);
 
     try {
       const extractedData = await parsePdf(file, extractionType);
@@ -153,7 +158,7 @@ export function DisbursementSection({
         onFinancierUploadChange(true);
       }
 
-      setSuccessOption(option);
+      
       
       const fieldsPopulated: string[] = [];
       if (extractedData.accountName) fieldsPopulated.push('Account Name');
@@ -253,7 +258,7 @@ export function DisbursementSection({
     <Label htmlFor={inputId} className="cursor-pointer block">
       <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors">
         <div className="flex items-center gap-3">
-          {successOption === option ? (
+          {getSuccessOption(option) ? (
             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
           ) : uploadingOption === option ? (
             <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />

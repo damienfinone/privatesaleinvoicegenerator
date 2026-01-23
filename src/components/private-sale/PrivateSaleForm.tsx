@@ -234,6 +234,8 @@ export function PrivateSaleForm() {
 
   const handleReset = () => {
     setFormData(initialFormData);
+    setLoanType(null);
+    setDivision(null);
     setIsUnderFinance(null);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);

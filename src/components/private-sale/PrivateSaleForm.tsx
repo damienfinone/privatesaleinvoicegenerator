@@ -289,22 +289,6 @@ export function PrivateSaleForm() {
       {/* Form - Only show when loan type is fully selected */}
       {isLoanTypeFullySelected && config && (
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Header */}
-          <div className="text-center border-b pb-6">
-            <div className="flex items-center justify-center gap-3 mb-2">
-              {config.icon}
-              <h1 className="text-2xl font-bold">{config.title}</h1>
-            </div>
-            <p className="text-muted-foreground">
-              Fin One Pty Ltd | ABN: 80 139 719 903 | Australian Credit Licence: 387 528
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Phone: 1800 346 663 | Fax: (07) 4723 5466 | PO Box 3041, Hermit Park QLD 4812
-            </p>
-            <p className="text-xs text-muted-foreground mt-2">{config.description}</p>
-          </div>
-
-          {/* Form Sections */}
           <BuyerDetailsSection
             data={formData.buyer}
             onChange={(buyer) => setFormData({ ...formData, buyer })}

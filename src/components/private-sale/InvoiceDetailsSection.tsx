@@ -10,11 +10,18 @@ interface InvoiceDetailsSectionProps {
 }
 
 export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionProps) {
-  // Format number with commas for display
-  const formatCurrency = (value: string) => {
-    const num = parseFloat(value.replace(/[^0-9.]/g, ''));
-    if (isNaN(num)) return '';
-    return num.toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Format number with commas for display (preserves input while typing)
+  const formatWithCommas = (value: string) => {
+    if (!value) return '';
+    // Remove non-numeric except decimal
+    const cleaned = value.replace(/[^0-9.]/g, '');
+    if (!cleaned) return '';
+    
+    // Split by decimal
+    const parts = cleaned.split('.');
+    // Add commas to integer part
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
   };
 
   // Parse formatted currency back to raw number string
@@ -54,7 +61,7 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
             <Label htmlFor="purchasePrice">Purchase Price ($) <span className="text-destructive">*</span></Label>
             <Input
               id="purchasePrice"
-              value={data.purchasePrice}
+              value={formatWithCommas(data.purchasePrice)}
               onChange={(e) => handleChange('purchasePrice', e.target.value)}
               placeholder="0.00"
               required
@@ -64,7 +71,7 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
             <Label htmlFor="depositAmount">Deposit Amount ($)</Label>
             <Input
               id="depositAmount"
-              value={data.depositAmount}
+              value={formatWithCommas(data.depositAmount)}
               onChange={(e) => handleChange('depositAmount', e.target.value)}
               placeholder="0.00"
             />
@@ -73,9 +80,9 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
             <Label htmlFor="balanceToBeFinanced">Balance to be Financed ($)</Label>
             <Input
               id="balanceToBeFinanced"
-              value={formatCurrency(data.balanceToBeFinanced || calculateBalance())}
-              onChange={(e) => handleChange('balanceToBeFinanced', e.target.value)}
-              placeholder="Auto-calculated"
+              value={formatWithCommas(data.balanceToBeFinanced || calculateBalance())}
+              readOnly
+              className="bg-muted"
             />
           </div>
         </div>

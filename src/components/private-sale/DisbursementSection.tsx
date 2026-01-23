@@ -7,6 +7,7 @@ import { Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { DisbursementOptions } from '@/types/privateSaleForm';
 import { parsePdf, ExtractionType } from '@/lib/pdfParser';
 import { useToast } from '@/hooks/use-toast';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -381,11 +382,11 @@ export function DisbursementSection({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="bpay_amount">Amount Payable <span className="text-destructive">*</span></Label>
-                <Input
+                <CurrencyInput
                   id="bpay_amount"
                   value={data.bpay.amount}
-                  onChange={(e) => handleBpayChange('amount', e.target.value)}
-                  placeholder="$0.00"
+                  onChange={(val) => handleBpayChange('amount', val)}
+                  placeholder="0.00"
                 />
               </div>
             </div>

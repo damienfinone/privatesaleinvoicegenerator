@@ -271,6 +271,9 @@ export function PrivateSaleForm() {
 
   return (
     <div className="space-y-6">
+      {/* Page Title */}
+      <h1 className="text-3xl font-bold text-center">Vendor Invoice Generator</h1>
+
       {/* Loan Type Selector */}
       <div className="bg-muted/50 rounded-lg p-6 border">
         <h2 className="text-lg font-semibold mb-4">Select Loan Type</h2>

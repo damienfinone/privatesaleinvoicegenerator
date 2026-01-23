@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Loader2, CheckCircle } from 'lucide-react';
 import { AssetDetails } from '@/types/privateSaleForm';
 import { parsePdf } from '@/lib/pdfParser';
@@ -49,6 +49,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           registration: extractedData.hull?.registration || data.hull.registration,
           registrationExpiry: extractedData.hull?.registrationExpiry || data.hull.registrationExpiry,
           buildDate: extractedData.hull?.buildDate || data.hull.buildDate,
+          identificationType: extractedData.hull?.identificationType || data.hull.identificationType,
           hin: extractedData.hull?.hin || data.hull.hin,
           colour: extractedData.hull?.colour || data.hull.colour,
           fuelType: extractedData.hull?.fuelType || data.hull.fuelType,
@@ -192,12 +193,25 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Input id="hullBuildDate" value={data.hull.buildDate} onChange={(e) => handleHullChange('buildDate', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullHin">Hull Identification Number (HIN) <span className="text-destructive">*</span></Label>
-            <Input id="hullHin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="hullColour">Colour</Label>
             <Input id="hullColour" value={data.hull.colour} onChange={(e) => handleHullChange('colour', e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hullIdType">Identification Type <span className="text-destructive">*</span></Label>
+            <Select value={data.hull.identificationType} onValueChange={(value) => handleHullChange('identificationType', value)}>
+              <SelectTrigger id="hullIdType" className="bg-background">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent className="bg-background z-50">
+                <SelectItem value="HIN">Hull Identification Number (HIN)</SelectItem>
+                <SelectItem value="SIN">Serial Identification Number (SIN)</SelectItem>
+                <SelectItem value="UVI">Unique Vessel Identifier (UVI)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="hullHin">{data.hull.identificationType || 'Identification'} Number <span className="text-destructive">*</span></Label>
+            <Input id="hullHin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} placeholder="Enter identification number" />
           </div>
         </div>
       </div>

@@ -195,12 +195,11 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
         <div className="grid grid-cols-2 gap-x-4">
           <Field label="Make" value={data.asset.hull.make} />
           <Field label="Model" value={data.asset.hull.model} />
-          <Field label="Series" value={data.asset.hull.series} />
           <Field label="Colour" value={data.asset.hull.colour} />
           <Field label="Registration" value={data.asset.hull.registration} />
           <Field label="Registration Expiry" value={fmtDate(data.asset.hull.registrationExpiry)} />
           <Field label="Build Date" value={data.asset.hull.buildDate || '—'} />
-          <Field label="HIN" value={data.asset.hull.hin} />
+          <Field label={data.asset.hull.identificationType || 'HIN'} value={data.asset.hull.hin} />
         </div>
       </Section>
 

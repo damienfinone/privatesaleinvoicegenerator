@@ -11,6 +11,7 @@ export interface HullDetails {
   registration: string;
   registrationExpiry: string;
   buildDate: string;
+  identificationType: string;
   hin: string;
   colour: string;
   // Vehicle-specific fields (used for Commercial/Consumer)
@@ -107,6 +108,7 @@ export const initialFormData: PrivateSaleFormData = {
       registration: '',
       registrationExpiry: '',
       buildDate: '',
+      identificationType: '',
       hin: '',
       colour: '',
       fuelType: '',

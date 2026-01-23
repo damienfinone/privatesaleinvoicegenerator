@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import consumerLogo from '@/assets/financeone-consumer-logo.svg';
 import commercialLogo from '@/assets/financeone-commercial-logo.svg';
 
-export type LoanType = 'commercial' | 'consumer' | 'boat';
+export type LoanType = 'commercial' | 'consumer' | 'boat' | 'commercial-boat';
 export type Division = 'consumer' | 'commercial';
+export type AssetType = 'vehicle' | 'watercraft';
 
 interface LoanTypeSelectorProps {
   value: LoanType | null;
@@ -28,15 +29,15 @@ const divisionOptions: { value: Division; logo: string; alt: string }[] = [
   },
 ];
 
-const consumerSubOptions: { value: LoanType; label: string; description: string; icon: React.ReactNode }[] = [
+const assetTypeOptions: { value: AssetType; label: string; description: string; icon: React.ReactNode }[] = [
   {
-    value: 'consumer',
+    value: 'vehicle',
     label: 'Vehicle',
-    description: 'Car, motorcycle & personal vehicles',
+    description: 'Car, motorcycle & other vehicles',
     icon: <Car className="h-8 w-8" />,
   },
   {
-    value: 'boat',
+    value: 'watercraft',
     label: 'Watercraft',
     description: 'Boat & watercraft financing',
     icon: <Ship className="h-8 w-8" />,
@@ -52,24 +53,21 @@ export function LoanTypeSelector({
 }: LoanTypeSelectorProps) {
   
   const handleDivisionSelect = (selectedDivision: Division) => {
-    if (selectedDivision === 'commercial') {
-      // Commercial only has vehicle, so select it directly
-      onDivisionChange('commercial');
-      onChange('commercial');
+    onDivisionChange(selectedDivision);
+  };
+
+  const handleAssetTypeSelect = (assetType: AssetType) => {
+    if (division === 'consumer') {
+      onChange(assetType === 'vehicle' ? 'consumer' : 'boat');
     } else {
-      // For consumer, show sub-options
-      onDivisionChange('consumer');
+      onChange(assetType === 'vehicle' ? 'commercial' : 'commercial-boat');
     }
   };
 
-  const handleSubOptionSelect = (loanType: LoanType) => {
-    onChange(loanType);
-  };
+  // Show asset type options when division is selected
+  const showAssetTypeOptions = division !== null;
 
-  // Show consumer sub-options when consumer division is selected but loan type not fully chosen
-  const showConsumerSubOptions = division === 'consumer';
-
-  if (!showConsumerSubOptions) {
+  if (!showAssetTypeOptions) {
     // Step 1: Division selection
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -81,9 +79,7 @@ export function LoanTypeSelector({
             className={cn(
               "flex flex-col items-center justify-center p-8 rounded-lg border-2 transition-all bg-white",
               "hover:border-primary hover:shadow-lg",
-              division === option.value
-                ? "border-primary shadow-md"
-                : "border-muted-foreground/25"
+              "border-muted-foreground/25"
             )}
           >
             <img 
@@ -97,7 +93,12 @@ export function LoanTypeSelector({
     );
   }
 
-  // Step 2: Consumer sub-options (Vehicle or Watercraft)
+  // Determine current asset type from loan type value
+  const currentAssetType: AssetType | null = 
+    value === 'consumer' || value === 'commercial' ? 'vehicle' :
+    value === 'boat' || value === 'commercial-boat' ? 'watercraft' : null;
+
+  // Step 2: Asset type selection (Vehicle or Watercraft)
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
@@ -111,25 +112,27 @@ export function LoanTypeSelector({
           <ArrowLeft className="h-4 w-4 mr-1" />
           Back
         </Button>
-        <span className="text-sm text-muted-foreground">Select asset type for Consumer</span>
+        <span className="text-sm text-muted-foreground">
+          Select asset type for {division === 'consumer' ? 'Consumer' : 'Commercial'}
+        </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {consumerSubOptions.map((option) => (
+        {assetTypeOptions.map((option) => (
           <button
             key={option.value}
             type="button"
-            onClick={() => handleSubOptionSelect(option.value)}
+            onClick={() => handleAssetTypeSelect(option.value)}
             className={cn(
               "flex flex-col items-center justify-center p-8 rounded-lg border-2 transition-all",
               "hover:border-primary hover:bg-primary/5",
-              value === option.value
+              currentAssetType === option.value
                 ? "border-primary bg-primary/10 text-primary"
                 : "border-muted-foreground/25 text-muted-foreground"
             )}
           >
             <div className={cn(
               "mb-3",
-              value === option.value ? "text-primary" : "text-muted-foreground"
+              currentAssetType === option.value ? "text-primary" : "text-muted-foreground"
             )}>
               {option.icon}
             </div>

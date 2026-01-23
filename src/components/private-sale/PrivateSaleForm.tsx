@@ -33,7 +33,12 @@ const loanTypeConfig: Record<LoanType, { title: string; icon: React.ReactNode; d
   boat: {
     title: 'Vendor Tax Invoice – Watercraft',
     icon: <Ship className="h-8 w-8 text-primary" />,
-    description: 'For boat and watercraft financing',
+    description: 'For consumer boat and watercraft financing',
+  },
+  'commercial-boat': {
+    title: 'Commercial Vendor Tax Invoice – Watercraft',
+    icon: <Ship className="h-8 w-8 text-primary" />,
+    description: 'For commercial boat and watercraft financing',
   },
 };
 
@@ -51,10 +56,7 @@ export function PrivateSaleForm() {
   const config = loanType ? loanTypeConfig[loanType] : null;
   
   // Determine if we should show the form (loan type fully selected)
-  const isLoanTypeFullySelected = loanType !== null && (
-    loanType === 'commercial' || 
-    (division === 'consumer' && (loanType === 'consumer' || loanType === 'boat'))
-  );
+  const isLoanTypeFullySelected = loanType !== null;
 
   const validateBuyerDetails = (): string | null => {
     const { name, contactNumber, address } = formData.buyer;
@@ -87,9 +89,10 @@ export function PrivateSaleForm() {
     if (!hasAssetUpload) return 'Please upload an Asset Document';
     
     const { hull, motor } = formData.asset;
+    const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
     
     // For vehicle loans (commercial/consumer)
-    if (loanType !== 'boat') {
+    if (!isWatercraft) {
       if (!hull.make.trim()) return 'Vehicle Make is required';
       if (!hull.model.trim()) return 'Vehicle Model is required';
       if (!hull.colour.trim()) return 'Vehicle Colour is required';

@@ -39,6 +39,7 @@ const loanTypeConfig: Record<LoanType, { title: string; icon: React.ReactNode; d
 
 export function PrivateSaleForm() {
   const [loanType, setLoanType] = useState<LoanType | null>(null);
+  const [division, setDivision] = useState<'consumer' | 'commercial' | null>(null);
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [disbursementType, setDisbursementType] = useState<DisbursementType | null>(null);
@@ -48,6 +49,12 @@ export function PrivateSaleForm() {
   const { toast } = useToast();
 
   const config = loanType ? loanTypeConfig[loanType] : null;
+  
+  // Determine if we should show the form (loan type fully selected)
+  const isLoanTypeFullySelected = loanType !== null && (
+    loanType === 'commercial' || 
+    (division === 'consumer' && (loanType === 'consumer' || loanType === 'boat'))
+  );
 
   const validateBuyerDetails = (): string | null => {
     const { name, contactNumber, address } = formData.buyer;
@@ -236,7 +243,25 @@ export function PrivateSaleForm() {
   };
 
   const handleLoanTypeChange = (newType: LoanType) => {
+    // Determine the new division
+    const newDivision = newType === 'commercial' ? 'commercial' : 'consumer';
+    
+    // If switching divisions, reset everything
+    if (newDivision !== division) {
+      setDivision(newDivision);
+      setFormData(initialFormData);
+      setDisbursementType(null);
+      setHasVendorUpload(false);
+      setHasFinancierUpload(false);
+      setHasAssetUpload(false);
+    }
+    
     setLoanType(newType);
+  };
+
+  const handleBackToDivision = () => {
+    setLoanType(null);
+    setDivision(null);
     setFormData(initialFormData);
     setDisbursementType(null);
     setHasVendorUpload(false);
@@ -249,11 +274,17 @@ export function PrivateSaleForm() {
       {/* Loan Type Selector */}
       <div className="bg-muted/50 rounded-lg p-6 border">
         <h2 className="text-lg font-semibold mb-4">Select Loan Type</h2>
-        <LoanTypeSelector value={loanType} onChange={handleLoanTypeChange} />
+        <LoanTypeSelector 
+          value={loanType} 
+          onChange={handleLoanTypeChange}
+          division={division}
+          onDivisionChange={setDivision}
+          onBackToDivision={handleBackToDivision}
+        />
       </div>
 
-      {/* Form - Only show when loan type is selected */}
-      {loanType && config && (
+      {/* Form - Only show when loan type is fully selected */}
+      {isLoanTypeFullySelected && config && (
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Header */}
           <div className="text-center border-b pb-6">

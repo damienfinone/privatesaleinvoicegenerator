@@ -110,12 +110,23 @@ export function PrivateSaleForm() {
       // For boat loans - validate hull details
       if (!hull.make.trim()) return 'Hull Make is required';
       if (!hull.model.trim()) return 'Hull Model is required';
-      if (!hull.colour.trim()) return 'Hull Colour is required';
       if (!hull.buildDate.trim()) return 'Hull Build Date is required';
       if (!hull.registration.trim()) return 'Hull Registration is required';
-      if (!hull.registrationExpiry.trim()) return 'Hull Registration Expiry is required';
-      if (!isValidAuDate(hull.registrationExpiry)) return 'Hull Registration Expiry must be a valid date (DD/MM/YYYY)';
       if (!hull.hin.trim()) return 'Hull Identification Number (HIN) is required';
+      
+      // Validate trailer details (all mandatory for watercraft)
+      const { trailer, motor } = formData.asset;
+      if (!trailer.make.trim()) return 'Trailer Make is required';
+      if (!trailer.model.trim()) return 'Trailer Model is required';
+      if (!trailer.registration.trim()) return 'Trailer Registration is required';
+      if (!trailer.buildDate.trim()) return 'Trailer Build Date is required';
+      if (!trailer.vin.trim()) return 'Trailer VIN is required';
+      
+      // Validate motor details (mandatory for watercraft)
+      if (!motor.make.trim()) return 'Motor Make is required';
+      if (!motor.model.trim()) return 'Motor Model is required';
+      if (!motor.buildDate.trim()) return 'Motor Build Date is required';
+      if (!motor.engineNumber.trim()) return 'Motor Engine Number is required';
     }
     return null;
   };

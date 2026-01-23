@@ -23,10 +23,10 @@ export interface HullDetails {
 export interface TrailerDetails {
   make: string;
   model: string;
-  series: string;
   registration: string;
   registrationExpiry: string;
   buildDate: string;
+  vin: string;
 }
 
 export interface MotorDetails {
@@ -117,10 +117,10 @@ export const initialFormData: PrivateSaleFormData = {
     trailer: {
       make: '',
       model: '',
-      series: '',
       registration: '',
       registrationExpiry: '',
       buildDate: '',
+      vin: '',
     },
     motor: {
       make: '',

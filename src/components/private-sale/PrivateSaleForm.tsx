@@ -270,6 +270,20 @@ export function PrivateSaleForm() {
     });
   };
 
+  const handleDivisionChange = (newDivision: 'consumer' | 'commercial' | null) => {
+    // If switching divisions, reset everything including loanType
+    if (newDivision !== division) {
+      setDivision(newDivision);
+      setLoanType(null); // Reset loan type when division changes
+      setFormData(initialFormData);
+      setIsUnderFinance(null);
+      setTrailerIncluded(null);
+      setHasVendorUpload(false);
+      setHasFinancierUpload(false);
+      setHasAssetUpload(false);
+    }
+  };
+
   const handleLoanTypeChange = (newType: LoanType) => {
     // Determine the new division
     const newDivision = newType === 'commercial' ? 'commercial' : 'consumer';
@@ -311,7 +325,7 @@ export function PrivateSaleForm() {
           value={loanType} 
           onChange={handleLoanTypeChange}
           division={division}
-          onDivisionChange={setDivision}
+          onDivisionChange={handleDivisionChange}
           onBackToDivision={handleBackToDivision}
         />
       </div>

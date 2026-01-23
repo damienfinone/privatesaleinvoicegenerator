@@ -101,6 +101,8 @@ export function PrivateSaleForm() {
       if (!hull.hin.trim()) return 'Vehicle VIN is required';
       if (!motor.engineNumber.trim()) return 'Vehicle Engine Number is required';
       if (!hull.bodyType.trim()) return 'Vehicle Body Type is required';
+      if (!hull.odometer.trim()) return 'Vehicle Odometer Reading is required';
+      if (!hull.transmission.trim()) return 'Vehicle Transmission is required';
     } else {
       // For boat loans - validate hull details
       if (!hull.make.trim()) return 'Hull Make is required';

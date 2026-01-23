@@ -153,11 +153,11 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           <Input id="vehicleBodyType" value={data.hull.bodyType} onChange={(e) => handleHullChange('bodyType', e.target.value)} placeholder="e.g. Sedan, SUV" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleOdometer">Odometer Reading</Label>
+          <Label htmlFor="vehicleOdometer">Odometer Reading <span className="text-destructive">*</span></Label>
           <Input id="vehicleOdometer" value={data.hull.odometer} onChange={(e) => handleHullChange('odometer', e.target.value)} placeholder="e.g. 50000" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vehicleTransmission">Transmission</Label>
+          <Label htmlFor="vehicleTransmission">Transmission <span className="text-destructive">*</span></Label>
           <Input id="vehicleTransmission" value={data.hull.transmission} onChange={(e) => handleHullChange('transmission', e.target.value)} placeholder="Auto / Manual" />
         </div>
       </div>

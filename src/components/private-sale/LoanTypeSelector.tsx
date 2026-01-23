@@ -1,6 +1,5 @@
-import { Car, Ship, ArrowLeft } from 'lucide-react';
+import { Car, Ship } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import consumerLogo from '@/assets/financeone-consumer-logo.svg';
 import commercialLogo from '@/assets/financeone-commercial-logo.svg';
 
@@ -100,47 +99,30 @@ export function LoanTypeSelector({
 
   // Step 2: Asset type selection (Vehicle or Watercraft)
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Button
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {assetTypeOptions.map((option) => (
+        <button
+          key={option.value}
           type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onBackToDivision}
-          className="text-muted-foreground hover:text-foreground"
+          onClick={() => handleAssetTypeSelect(option.value)}
+          className={cn(
+            "flex flex-col items-center justify-center p-8 rounded-lg border-2 transition-all",
+            "hover:border-primary hover:bg-primary/5",
+            currentAssetType === option.value
+              ? "border-primary bg-primary/10 text-primary"
+              : "border-muted-foreground/25 text-muted-foreground"
+          )}
         >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back
-        </Button>
-        <span className="text-sm text-muted-foreground">
-          Select asset type for {division === 'consumer' ? 'Consumer' : 'Commercial'}
-        </span>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {assetTypeOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            onClick={() => handleAssetTypeSelect(option.value)}
-            className={cn(
-              "flex flex-col items-center justify-center p-8 rounded-lg border-2 transition-all",
-              "hover:border-primary hover:bg-primary/5",
-              currentAssetType === option.value
-                ? "border-primary bg-primary/10 text-primary"
-                : "border-muted-foreground/25 text-muted-foreground"
-            )}
-          >
-            <div className={cn(
-              "mb-3",
-              currentAssetType === option.value ? "text-primary" : "text-muted-foreground"
-            )}>
-              {option.icon}
-            </div>
-            <span className="font-semibold text-lg">{option.label}</span>
-            <span className="text-xs text-center mt-1 opacity-75">{option.description}</span>
-          </button>
-        ))}
-      </div>
+          <div className={cn(
+            "mb-3",
+            currentAssetType === option.value ? "text-primary" : "text-muted-foreground"
+          )}>
+            {option.icon}
+          </div>
+          <span className="font-semibold text-lg">{option.label}</span>
+          <span className="text-xs text-center mt-1 opacity-75">{option.description}</span>
+        </button>
+      ))}
     </div>
   );
 }

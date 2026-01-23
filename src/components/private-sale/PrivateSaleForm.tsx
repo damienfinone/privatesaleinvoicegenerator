@@ -112,7 +112,8 @@ export function PrivateSaleForm() {
       if (!hull.model.trim()) return 'Hull Model is required';
       if (!hull.buildDate.trim()) return 'Hull Build Date is required';
       if (!hull.registration.trim()) return 'Hull Registration is required';
-      if (!hull.hin.trim()) return 'Hull Identification Number (HIN) is required';
+      if (!hull.identificationType.trim()) return 'Hull Identification Type is required';
+      if (!hull.hin.trim()) return 'Hull Identification Number is required';
       
       // Validate trailer details (all mandatory for watercraft)
       const { trailer, motor } = formData.asset;

@@ -276,9 +276,15 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, d
           <div ref={contentRef} className="bg-white text-black p-8 w-[210mm] mx-auto shadow-lg font-sans text-xs leading-relaxed">
             {/* Header */}
             <div className="text-center border-b-2 border-black pb-4 mb-4">
-              <h1 className="text-2xl font-bold mb-1" style={{ letterSpacing: '0.05em' }}>Finance One Pty Ltd</h1>
-              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>ABN: 80 139 719 903</p>
-              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Australian Credit Licence: 387 528</p>
+              <h1 className="text-2xl font-bold mb-1" style={{ letterSpacing: '0.05em' }}>
+                {loanType === 'commercial' ? 'Finance One Commercial Pty Ltd' : 'Finance One Pty Ltd'}
+              </h1>
+              <p className="text-xs" style={{ letterSpacing: '0.02em' }}>
+                {loanType === 'commercial' ? 'ABN: 18 634 900 548' : 'ABN: 80 139 719 903'}
+              </p>
+              {loanType !== 'commercial' && (
+                <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Australian Credit Licence: 387 528</p>
+              )}
               <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Phone: 1800 346 663 &nbsp;|&nbsp; Fax: (07) 4723 5466</p>
               <p className="text-xs" style={{ letterSpacing: '0.02em' }}>PO Box 3041, Hermit Park QLD 4812</p>
               <h2 className="text-lg font-bold mt-3 border-t border-b border-gray-400 py-2" style={{ letterSpacing: '0.02em' }}>{title}</h2>

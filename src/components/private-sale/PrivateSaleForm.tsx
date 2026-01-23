@@ -271,26 +271,32 @@ export function PrivateSaleForm() {
   };
 
   const handleDivisionChange = (newDivision: 'consumer' | 'commercial' | null) => {
-    // If switching divisions, reset everything including loanType
     if (newDivision !== division) {
       setDivision(newDivision);
-      setLoanType(null); // Reset loan type when division changes
-      setFormData(initialFormData);
-      setIsUnderFinance(null);
-      setTrailerIncluded(null);
-      setHasVendorUpload(false);
-      setHasFinancierUpload(false);
-      setHasAssetUpload(false);
+      // Preserve asset type selection - just update the loan type to match new division
+      if (loanType) {
+        const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
+        if (isWatercraft) {
+          setLoanType(newDivision === 'commercial' ? 'commercial-boat' : 'boat');
+        } else {
+          setLoanType(newDivision === 'commercial' ? 'commercial' : 'consumer');
+        }
+      }
+      // Keep all form data - only the branding changes
     }
   };
 
   const handleLoanTypeChange = (newType: LoanType) => {
-    // Determine the new division
-    const newDivision = newType === 'commercial' ? 'commercial' : 'consumer';
+    // Determine the new division from the loan type
+    const newDivision = (newType === 'commercial' || newType === 'commercial-boat') ? 'commercial' : 'consumer';
+    setDivision(newDivision);
     
-    // If switching divisions, reset everything
-    if (newDivision !== division) {
-      setDivision(newDivision);
+    // Check if switching between vehicle and watercraft (different asset types)
+    const currentIsWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
+    const newIsWatercraft = newType === 'boat' || newType === 'commercial-boat';
+    
+    // Only reset form data if switching between vehicle and watercraft
+    if (loanType !== null && currentIsWatercraft !== newIsWatercraft) {
       setFormData(initialFormData);
       setIsUnderFinance(null);
       setTrailerIncluded(null);
@@ -303,14 +309,9 @@ export function PrivateSaleForm() {
   };
 
   const handleBackToDivision = () => {
+    // Only reset the division selection, keep the rest
     setLoanType(null);
     setDivision(null);
-    setFormData(initialFormData);
-    setIsUnderFinance(null);
-    setTrailerIncluded(null);
-    setHasVendorUpload(false);
-    setHasFinancierUpload(false);
-    setHasAssetUpload(false);
   };
 
   return (

@@ -75,6 +75,7 @@ export function DisbursementSection({
 
   const handleSelectPaymentMethod = (method: 'bank' | 'bpay') => {
     if (method === 'bank') {
+      // Clear BPAY fields only, keep accountName as it's shared
       onChange({
         ...data,
         bpay: {
@@ -88,11 +89,11 @@ export function DisbursementSection({
         description: 'BPAY fields have been cleared.',
       });
     } else {
+      // Clear bank fields except accountName (shared field)
       onChange({
         ...data,
         payoutBank: {
           ...data.payoutBank,
-          accountName: '',
           bsbNumber: '',
           accountNumber: '',
           bank: '',
@@ -100,7 +101,7 @@ export function DisbursementSection({
       });
       toast({
         title: 'BPAY Selected',
-        description: 'Bank account fields have been cleared.',
+        description: 'Bank account fields have been cleared (Account/Financier Name retained).',
       });
     }
     setShowPaymentMethodDialog(false);
@@ -324,7 +325,7 @@ export function DisbursementSection({
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="pb_accountName">Account Name</Label>
+                <Label htmlFor="pb_accountName">Account/Financier Name</Label>
                 <Input
                   id="pb_accountName"
                   value={data.payoutBank.accountName}
@@ -476,11 +477,11 @@ export function DisbursementSection({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <Button variant="outline" onClick={() => handleSelectPaymentMethod('bank')}>
-              Bank Account
-            </Button>
-            <Button onClick={() => handleSelectPaymentMethod('bpay')}>
+            <Button variant="outline" onClick={() => handleSelectPaymentMethod('bpay')}>
               BPAY
+            </Button>
+            <Button onClick={() => handleSelectPaymentMethod('bank')}>
+              Bank Account
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

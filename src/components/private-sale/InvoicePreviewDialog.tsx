@@ -208,7 +208,7 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
         <div className="grid grid-cols-2 gap-x-4">
           <Field label="Make" value={data.asset.trailer.make} />
           <Field label="Model" value={data.asset.trailer.model} />
-          <Field label="Series" value={data.asset.trailer.series} />
+          <Field label="VIN" value={data.asset.trailer.vin} />
           <Field label="Registration" value={data.asset.trailer.registration} />
           <Field label="Registration Expiry" value={fmtDate(data.asset.trailer.registrationExpiry)} />
           <Field label="Build Date" value={data.asset.trailer.buildDate || '—'} />
@@ -219,7 +219,6 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
         <div className="grid grid-cols-2 gap-x-4">
           <Field label="Make" value={data.asset.motor.make} />
           <Field label="Model" value={data.asset.motor.model} />
-          <Field label="Series" value={data.asset.motor.series} />
           <Field label="Engine Size" value={data.asset.motor.engineSize} />
           <Field label="Build Date" value={data.asset.motor.buildDate || '—'} />
           <Field label="Engine Number" value={data.asset.motor.engineNumber} />

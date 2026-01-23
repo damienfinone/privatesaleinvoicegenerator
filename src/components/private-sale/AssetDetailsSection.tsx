@@ -59,10 +59,10 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         trailer: {
           make: extractedData.trailer?.make || data.trailer.make,
           model: extractedData.trailer?.model || data.trailer.model,
-          series: extractedData.trailer?.series || data.trailer.series,
           registration: extractedData.trailer?.registration || data.trailer.registration,
           registrationExpiry: extractedData.trailer?.registrationExpiry || data.trailer.registrationExpiry,
           buildDate: extractedData.trailer?.buildDate || data.trailer.buildDate,
+          vin: extractedData.trailer?.vin || data.trailer.vin,
         },
         motor: {
           make: extractedData.motor?.make || data.motor.make,
@@ -180,15 +180,11 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Input id="hullModel" value={data.hull.model} onChange={(e) => handleHullChange('model', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullSeries">Series</Label>
-            <Input id="hullSeries" value={data.hull.series} onChange={(e) => handleHullChange('series', e.target.value)} />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="hullRego">Registration <span className="text-destructive">*</span></Label>
             <Input id="hullRego" value={data.hull.registration} onChange={(e) => handleHullChange('registration', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullRegoExpiry">Registration Expiry <span className="text-destructive">*</span></Label>
+            <Label htmlFor="hullRegoExpiry">Registration Expiry</Label>
             <Input id="hullRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} />
           </div>
           <div className="space-y-2">
@@ -200,7 +196,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Input id="hullHin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="hullColour">Colour <span className="text-destructive">*</span></Label>
+            <Label htmlFor="hullColour">Colour</Label>
             <Input id="hullColour" value={data.hull.colour} onChange={(e) => handleHullChange('colour', e.target.value)} />
           </div>
         </div>
@@ -211,19 +207,15 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         <h4 className="font-semibold text-sm text-muted-foreground">Trailer Details</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="trailerMake">Make</Label>
+            <Label htmlFor="trailerMake">Make <span className="text-destructive">*</span></Label>
             <Input id="trailerMake" value={data.trailer.make} onChange={(e) => handleTrailerChange('make', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="trailerModel">Model</Label>
+            <Label htmlFor="trailerModel">Model <span className="text-destructive">*</span></Label>
             <Input id="trailerModel" value={data.trailer.model} onChange={(e) => handleTrailerChange('model', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="trailerSeries">Series</Label>
-            <Input id="trailerSeries" value={data.trailer.series} onChange={(e) => handleTrailerChange('series', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="trailerRego">Registration</Label>
+            <Label htmlFor="trailerRego">Registration <span className="text-destructive">*</span></Label>
             <Input id="trailerRego" value={data.trailer.registration} onChange={(e) => handleTrailerChange('registration', e.target.value)} />
           </div>
           <div className="space-y-2">
@@ -231,8 +223,12 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Input id="trailerRegoExpiry" value={data.trailer.registrationExpiry} onChange={(e) => handleTrailerChange('registrationExpiry', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="trailerBuildDate">Build Date</Label>
+            <Label htmlFor="trailerBuildDate">Build Date <span className="text-destructive">*</span></Label>
             <Input id="trailerBuildDate" value={data.trailer.buildDate} onChange={(e) => handleTrailerChange('buildDate', e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="trailerVin">VIN <span className="text-destructive">*</span></Label>
+            <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value)} />
           </div>
         </div>
       </div>
@@ -242,27 +238,23 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         <h4 className="font-semibold text-sm text-muted-foreground">Motor Details</h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="motorMake">Make</Label>
+            <Label htmlFor="motorMake">Make <span className="text-destructive">*</span></Label>
             <Input id="motorMake" value={data.motor.make} onChange={(e) => handleMotorChange('make', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="motorModel">Model</Label>
+            <Label htmlFor="motorModel">Model <span className="text-destructive">*</span></Label>
             <Input id="motorModel" value={data.motor.model} onChange={(e) => handleMotorChange('model', e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="motorSeries">Series</Label>
-            <Input id="motorSeries" value={data.motor.series} onChange={(e) => handleMotorChange('series', e.target.value)} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="motorEngineSize">Engine Size</Label>
             <Input id="motorEngineSize" value={data.motor.engineSize} onChange={(e) => handleMotorChange('engineSize', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="motorBuildDate">Build Date</Label>
+            <Label htmlFor="motorBuildDate">Build Date <span className="text-destructive">*</span></Label>
             <Input id="motorBuildDate" value={data.motor.buildDate} onChange={(e) => handleMotorChange('buildDate', e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="motorEngineNumber">Engine Number</Label>
+            <Label htmlFor="motorEngineNumber">Engine Number <span className="text-destructive">*</span></Label>
             <Input id="motorEngineNumber" value={data.motor.engineNumber} onChange={(e) => handleMotorChange('engineNumber', e.target.value)} />
           </div>
         </div>

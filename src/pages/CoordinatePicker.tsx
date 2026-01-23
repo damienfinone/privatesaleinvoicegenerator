@@ -19,6 +19,7 @@ export default function CoordinatePicker() {
     consumer: {},
     commercial: {},
     boat: {},
+    'commercial-boat': {},
   });
   
   const [mouseCoords, setMouseCoords] = useState<{
@@ -107,9 +108,10 @@ export default function CoordinatePicker() {
             <SelectValue placeholder="Select template" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="consumer">Consumer Invoice</SelectItem>
-            <SelectItem value="commercial">Commercial Invoice</SelectItem>
-            <SelectItem value="boat">Watercraft Invoice</SelectItem>
+            <SelectItem value="consumer">Consumer Vehicle</SelectItem>
+            <SelectItem value="commercial">Commercial Vehicle</SelectItem>
+            <SelectItem value="boat">Consumer Watercraft</SelectItem>
+            <SelectItem value="commercial-boat">Commercial Watercraft</SelectItem>
           </SelectContent>
         </Select>
       </header>

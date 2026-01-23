@@ -134,6 +134,7 @@ export function getFieldsForTemplate(loanType: LoanType): FieldDefinition[] {
     case 'commercial':
       return COMMERCIAL_FIELDS;
     case 'boat':
+    case 'commercial-boat':
       return WATERCRAFT_FIELDS;
     default:
       return CONSUMER_FIELDS;
@@ -144,6 +145,7 @@ export const TEMPLATE_PATHS: Record<LoanType, string> = {
   commercial: '/templates/Commercial_Vendor_Tax_Invoice.pdf',
   consumer: '/templates/Consumer_Vendor_Tax_Invoice.pdf',
   boat: '/templates/Watercraft_Vendor_Tax_Invoice.pdf',
+  'commercial-boat': '/templates/Watercraft_Vendor_Tax_Invoice.pdf',
 };
 
 // PDF dimensions (A4 at 72 DPI)

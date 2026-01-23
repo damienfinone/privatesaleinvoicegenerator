@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Eye, Loader2 } from 'lucide-react';
 import { PrivateSaleFormData } from '@/types/privateSaleForm';
 
-type LoanType = 'commercial' | 'consumer' | 'boat';
+type LoanType = 'commercial' | 'consumer' | 'boat' | 'commercial-boat';
 
 interface InvoicePreviewDialogProps {
   open: boolean;
@@ -241,9 +241,12 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, i
   const contentRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
-  const title = loanType === 'boat' 
-    ? 'VENDOR TAX INVOICE – WATERCRAFT' 
-    : loanType === 'commercial' 
+  const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
+  const isCommercial = loanType === 'commercial' || loanType === 'commercial-boat';
+  
+  const title = isWatercraft 
+    ? (isCommercial ? 'COMMERCIAL VENDOR TAX INVOICE – WATERCRAFT' : 'VENDOR TAX INVOICE – WATERCRAFT')
+    : isCommercial 
       ? 'COMMERCIAL VENDOR TAX INVOICE' 
       : 'VENDOR TAX INVOICE';
 
@@ -263,7 +266,9 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, i
       const r = Math.min(w / canvas.width, h / canvas.height);
       // Use JPEG with compression for smaller file size
       pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, canvas.width * r, canvas.height * r);
-      const label = loanType === 'boat' ? 'Watercraft' : loanType === 'commercial' ? 'Commercial' : 'Consumer';
+      const label = isWatercraft 
+        ? (isCommercial ? 'Commercial_Watercraft' : 'Consumer_Watercraft')
+        : (isCommercial ? 'Commercial' : 'Consumer');
       pdf.save(`${label}_Vendor_Tax_Invoice.pdf`);
     } finally {
       setGenerating(false);
@@ -283,12 +288,12 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, i
             {/* Header */}
             <div className="text-center border-b-2 border-black pb-4 mb-4">
               <h1 className="text-2xl font-bold mb-1" style={{ letterSpacing: '0.05em' }}>
-                {loanType === 'commercial' ? 'Finance One Commercial Pty Ltd' : 'Finance One Pty Ltd'}
+                {isCommercial ? 'Finance One Commercial Pty Ltd' : 'Finance One Pty Ltd'}
               </h1>
               <p className="text-xs" style={{ letterSpacing: '0.02em' }}>
-                {loanType === 'commercial' ? 'ABN: 18 634 900 548' : 'ABN: 80 139 719 903'}
+                {isCommercial ? 'ABN: 18 634 900 548' : 'ABN: 80 139 719 903'}
               </p>
-              {loanType !== 'commercial' && (
+              {!isCommercial && (
                 <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Australian Credit Licence: 387 528</p>
               )}
               <p className="text-xs" style={{ letterSpacing: '0.02em' }}>Phone: 1800 346 663 &nbsp;|&nbsp; Fax: (07) 4723 5466</p>
@@ -297,7 +302,7 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, i
             </div>
 
             {/* Content based on loan type */}
-            {loanType === 'boat' ? (
+            {isWatercraft ? (
               <WatercraftContent data={formData} isUnderFinance={isUnderFinance} />
             ) : (
               <ConsumerContent data={formData} isUnderFinance={isUnderFinance} />

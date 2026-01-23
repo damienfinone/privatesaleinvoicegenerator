@@ -21,7 +21,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-  const isBoatLoan = loanType === 'boat';
+  const isBoatLoan = loanType === 'boat' || loanType === 'commercial-boat';
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

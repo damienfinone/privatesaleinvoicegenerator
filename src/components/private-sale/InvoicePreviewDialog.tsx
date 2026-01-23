@@ -159,7 +159,7 @@ function ConsumerContent({ data, isUnderFinance }: { data: PrivateSaleFormData; 
           <Field label="Model" value={data.asset.hull.model} />
           <Field label="Series" value={data.asset.hull.series} />
           <Field label="Colour" value={data.asset.hull.colour} />
-          <Field label="Build Date" value={fmtDate(data.asset.hull.buildDate)} />
+          <Field label="Build Date" value={data.asset.hull.buildDate || '—'} />
           <Field label="Fuel Type" value={data.asset.hull.fuelType} />
           <Field label="Registration" value={data.asset.hull.registration} />
           <Field label="Registration Expiry" value={fmtDate(data.asset.hull.registrationExpiry)} />
@@ -199,7 +199,7 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
           <Field label="Colour" value={data.asset.hull.colour} />
           <Field label="Registration" value={data.asset.hull.registration} />
           <Field label="Registration Expiry" value={fmtDate(data.asset.hull.registrationExpiry)} />
-          <Field label="Build Date" value={fmtDate(data.asset.hull.buildDate)} />
+          <Field label="Build Date" value={data.asset.hull.buildDate || '—'} />
           <Field label="HIN" value={data.asset.hull.hin} />
         </div>
       </Section>
@@ -211,7 +211,7 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
           <Field label="Series" value={data.asset.trailer.series} />
           <Field label="Registration" value={data.asset.trailer.registration} />
           <Field label="Registration Expiry" value={fmtDate(data.asset.trailer.registrationExpiry)} />
-          <Field label="Build Date" value={fmtDate(data.asset.trailer.buildDate)} />
+          <Field label="Build Date" value={data.asset.trailer.buildDate || '—'} />
         </div>
       </Section>
 
@@ -221,7 +221,7 @@ function WatercraftContent({ data, isUnderFinance }: { data: PrivateSaleFormData
           <Field label="Model" value={data.asset.motor.model} />
           <Field label="Series" value={data.asset.motor.series} />
           <Field label="Engine Size" value={data.asset.motor.engineSize} />
-          <Field label="Build Date" value={fmtDate(data.asset.motor.buildDate)} />
+          <Field label="Build Date" value={data.asset.motor.buildDate || '—'} />
           <Field label="Engine Number" value={data.asset.motor.engineNumber} />
         </div>
       </Section>

@@ -44,7 +44,6 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
               id="purchasePrice"
               value={data.purchasePrice}
               onChange={(val) => handleChange('purchasePrice', val)}
-              required
             />
           </div>
           <div className="space-y-2">

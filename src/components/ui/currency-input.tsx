@@ -7,7 +7,6 @@ interface CurrencyInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  required?: boolean;
   className?: string;
   readOnly?: boolean;
 }
@@ -17,7 +16,6 @@ export function CurrencyInput({
   value, 
   onChange, 
   placeholder = "0.00", 
-  required,
   className,
   readOnly 
 }: CurrencyInputProps) {
@@ -64,7 +62,6 @@ export function CurrencyInput({
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
       placeholder={placeholder}
-      required={required}
       readOnly={readOnly}
       className={cn(readOnly && "bg-muted", className)}
     />

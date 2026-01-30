@@ -330,7 +330,10 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
       <CardContent className="space-y-6">
         {/* PDF Upload */}
         <Label htmlFor="assetPdf" className="cursor-pointer block">
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors">
+          <div className={cn(
+            "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors",
+            hasError('asset.upload') && !hasUpload ? "border-destructive" : "border-muted-foreground/25"
+          )}>
             <div className="flex items-center gap-3">
               {hasUpload ? (
                 <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />

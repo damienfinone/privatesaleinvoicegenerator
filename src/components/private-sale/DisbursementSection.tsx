@@ -261,16 +261,21 @@ export function DisbursementSection({
     extractionType, 
     inputId,
     title,
-    subtitle = "Fields below will be auto-populated"
+    subtitle = "Fields below will be auto-populated",
+    showError = false
   }: { 
     option: 'bankAccount' | 'payoutBank'; 
     extractionType: ExtractionType;
     inputId: string;
     title: string;
     subtitle?: string;
+    showError?: boolean;
   }) => (
     <Label htmlFor={inputId} className="cursor-pointer block">
-      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 mb-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors">
+      <div className={cn(
+        "border-2 border-dashed rounded-lg p-4 mb-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors",
+        showError && !getSuccessOption(option) ? "border-destructive" : "border-muted-foreground/25"
+      )}>
         <div className="flex items-center gap-3">
           {getSuccessOption(option) ? (
             <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
@@ -304,7 +309,10 @@ export function DisbursementSection({
         {/* Is Asset Under Finance? */}
         <div className="space-y-2">
           <Label className="text-base font-medium">Is the asset currently under finance? <span className="text-destructive">*</span></Label>
-          <div className="flex gap-4">
+          <div className={cn(
+            "flex gap-4 p-2 rounded-md",
+            hasError('disbursement.isUnderFinance') && isUnderFinance === null && "border border-destructive"
+          )}>
             <Button
               type="button"
               variant={isUnderFinance === false ? 'default' : 'outline'}
@@ -333,6 +341,7 @@ export function DisbursementSection({
               extractionType="payout_letter_bank" 
               inputId="payoutBankPdf" 
               title="Upload payout letter from the current financier"
+              showError={hasError('disbursement.financierUpload')}
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -442,6 +451,7 @@ export function DisbursementSection({
               extractionType="bank_account" 
               inputId="bankAccountPdf" 
               title="Upload proof of vendor's nominated bank account"
+              showError={hasError('disbursement.vendorUpload')}
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

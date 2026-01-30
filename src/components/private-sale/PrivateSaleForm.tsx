@@ -336,12 +336,12 @@ export function PrivateSaleForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <BuyerDetailsSection
             data={formData.buyer}
-            onChange={(buyer) => setFormData({ ...formData, buyer })}
+            onChange={(buyer) => setFormData(prev => ({ ...prev, buyer }))}
           />
 
           <AssetDetailsSection
             data={formData.asset}
-            onChange={(asset) => setFormData({ ...formData, asset })}
+            onChange={(asset) => setFormData(prev => ({ ...prev, asset }))}
             loanType={loanType}
             hasUpload={hasAssetUpload}
             onUploadChange={setHasAssetUpload}
@@ -351,12 +351,12 @@ export function PrivateSaleForm() {
 
           <InvoiceDetailsSection
             data={formData.invoice}
-            onChange={(invoice) => setFormData({ ...formData, invoice })}
+            onChange={(invoice) => setFormData(prev => ({ ...prev, invoice }))}
           />
 
           <DisbursementSection
             data={formData.disbursement}
-            onChange={(disbursement) => setFormData({ ...formData, disbursement })}
+            onChange={(disbursement) => setFormData(prev => ({ ...prev, disbursement }))}
             isUnderFinance={isUnderFinance}
             onIsUnderFinanceChange={setIsUnderFinance}
             balanceToBeFinanced={formData.invoice.balanceToBeFinanced}

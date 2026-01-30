@@ -52,6 +52,7 @@ export function PrivateSaleForm() {
   const [hasVendorUpload, setHasVendorUpload] = useState(false);
   const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
   const [hasAssetUpload, setHasAssetUpload] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const config = loanType ? loanTypeConfig[loanType] : null;
@@ -59,13 +60,14 @@ export function PrivateSaleForm() {
   // Determine if we should show the form (loan type fully selected)
   const isLoanTypeFullySelected = loanType !== null;
 
-  const validateBuyerDetails = (): string | null => {
+  const validateBuyerDetails = (): string[] => {
+    const errors: string[] = [];
     const { name, contactNumber, address } = formData.buyer;
-    if (!name.trim()) return "Buyer's Name is required";
-    if (!contactNumber.trim()) return "Buyer's Contact Number is required";
-    if (!isValidAustralianPhone(contactNumber)) return "Please enter a valid Australian phone number";
-    if (!address.trim()) return "Buyer's Address is required";
-    return null;
+    if (!name.trim()) errors.push('buyer.name');
+    if (!contactNumber.trim()) errors.push('buyer.contactNumber');
+    else if (!isValidAustralianPhone(contactNumber)) errors.push('buyer.contactNumber');
+    if (!address.trim()) errors.push('buyer.address');
+    return errors;
   };
 
   // Validate AU date format (DD/MM/YYYY)
@@ -86,61 +88,73 @@ export function PrivateSaleForm() {
     return false;
   };
 
-  const validateAssetDetails = (): string | null => {
-    if (!hasAssetUpload) return 'Please upload an Asset Document';
+  const validateAssetDetails = (): string[] => {
+    const errors: string[] = [];
+    if (!hasAssetUpload) errors.push('asset.upload');
     
     const { hull, motor } = formData.asset;
     const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
     
     // For vehicle loans (commercial/consumer)
     if (!isWatercraft) {
-      if (!hull.make.trim()) return 'Vehicle Make is required';
-      if (!hull.model.trim()) return 'Vehicle Model is required';
-      if (!hull.colour.trim()) return 'Vehicle Colour is required';
-      if (!hull.buildDate.trim()) return 'Vehicle Build Date/Year is required';
-      if (!hull.fuelType.trim()) return 'Vehicle Fuel Type is required';
-      if (!hull.registration.trim()) return 'Vehicle Registration is required';
-      if (!hull.registrationExpiry.trim()) return 'Vehicle Registration Expiry is required';
-      if (!isValidAuDate(hull.registrationExpiry)) return 'Registration Expiry must be a valid date (DD/MM/YYYY)';
-      if (!hull.hin.trim()) return 'Vehicle VIN is required';
-      if (!motor.engineNumber.trim()) return 'Vehicle Engine Number is required';
-      if (!hull.bodyType.trim()) return 'Vehicle Body Type is required';
-      if (!hull.odometer.trim()) return 'Vehicle Odometer Reading is required';
-      if (!hull.transmission.trim()) return 'Vehicle Transmission is required';
+      if (!hull.make.trim()) errors.push('asset.hull.make');
+      if (!hull.model.trim()) errors.push('asset.hull.model');
+      if (!hull.colour.trim()) errors.push('asset.hull.colour');
+      if (!hull.buildDate.trim()) errors.push('asset.hull.buildDate');
+      if (!hull.fuelType.trim()) errors.push('asset.hull.fuelType');
+      if (!hull.registration.trim()) errors.push('asset.hull.registration');
+      if (!hull.registrationExpiry.trim()) errors.push('asset.hull.registrationExpiry');
+      else if (!isValidAuDate(hull.registrationExpiry)) errors.push('asset.hull.registrationExpiry');
+      if (!hull.hin.trim()) errors.push('asset.hull.hin');
+      if (!motor.engineNumber.trim()) errors.push('asset.motor.engineNumber');
+      if (!hull.bodyType.trim()) errors.push('asset.hull.bodyType');
+      if (!hull.odometer.trim()) errors.push('asset.hull.odometer');
+      if (!hull.transmission.trim()) errors.push('asset.hull.transmission');
     } else {
       // For boat loans - validate hull details
-      if (!hull.make.trim()) return 'Hull Make is required';
-      if (!hull.model.trim()) return 'Hull Model is required';
-      if (!hull.buildDate.trim()) return 'Hull Build Date is required';
-      if (!hull.registration.trim()) return 'Hull Registration is required';
-      if (!hull.identificationType.trim()) return 'Hull Identification Type is required';
-      if (!hull.hin.trim()) return 'Hull Identification Number is required';
+      if (!hull.make.trim()) errors.push('asset.hull.make');
+      if (!hull.model.trim()) errors.push('asset.hull.model');
+      if (!hull.buildDate.trim()) errors.push('asset.hull.buildDate');
+      if (!hull.registration.trim()) errors.push('asset.hull.registration');
+      if (!hull.identificationType.trim()) errors.push('asset.hull.identificationType');
+      if (!hull.hin.trim()) errors.push('asset.hull.hin');
       
       // Validate trailer details only if trailer is included
-      if (trailerIncluded === null) return 'Please answer whether a trailer is included';
+      if (trailerIncluded === null) errors.push('asset.trailerIncluded');
       
       if (trailerIncluded) {
         const { trailer } = formData.asset;
-        if (!trailer.make.trim()) return 'Trailer Make is required';
-        if (!trailer.model.trim()) return 'Trailer Model is required';
-        if (!trailer.registration.trim()) return 'Trailer Registration is required';
-        if (!trailer.buildDate.trim()) return 'Trailer Build Date is required';
-        if (!trailer.vin.trim()) return 'Trailer VIN is required';
+        if (!trailer.make.trim()) errors.push('asset.trailer.make');
+        if (!trailer.model.trim()) errors.push('asset.trailer.model');
+        if (!trailer.registration.trim()) errors.push('asset.trailer.registration');
+        if (!trailer.buildDate.trim()) errors.push('asset.trailer.buildDate');
+        if (!trailer.vin.trim()) errors.push('asset.trailer.vin');
       }
       
       // Validate motor details (mandatory for watercraft)
-      const { motor } = formData.asset;
-      if (!motor.make.trim()) return 'Motor Make is required';
-      if (!motor.model.trim()) return 'Motor Model is required';
-      if (!motor.buildDate.trim()) return 'Motor Build Date is required';
-      if (!motor.engineNumber.trim()) return 'Motor Engine Number is required';
+      if (!motor.make.trim()) errors.push('asset.motor.make');
+      if (!motor.model.trim()) errors.push('asset.motor.model');
+      if (!motor.buildDate.trim()) errors.push('asset.motor.buildDate');
+      if (!motor.engineNumber.trim()) errors.push('asset.motor.engineNumber');
     }
-    return null;
+    return errors;
   };
 
-  const validateDisbursement = (): string | null => {
+  const validateInvoiceDetails = (): string[] => {
+    const errors: string[] = [];
+    const purchasePrice = parseFloat(formData.invoice.purchasePrice.replace(/[^0-9.]/g, ''));
+    if (!formData.invoice.purchasePrice.trim() || isNaN(purchasePrice) || purchasePrice <= 0) {
+      errors.push('invoice.purchasePrice');
+    }
+    return errors;
+  };
+
+  const validateDisbursement = (): string[] => {
+    const errors: string[] = [];
+    
     if (isUnderFinance === null) {
-      return 'Please answer whether the asset is currently under finance';
+      errors.push('disbursement.isUnderFinance');
+      return errors;
     }
 
     const balance = parseFloat(formData.invoice.balanceToBeFinanced.replace(/[^0-9.]/g, '')) || 0;
@@ -150,43 +164,51 @@ export function PrivateSaleForm() {
     // If under finance, validate financier details
     if (isUnderFinance) {
       if (!hasFinancierUpload) {
-        return 'Please upload the payout letter from the financier';
+        errors.push('disbursement.financierUpload');
       }
       
       const { amount: bpayAmount, billerCode, referenceNumber } = formData.disbursement.bpay;
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.payoutBank;
       
       if (!bpayAmount) {
-        return 'Please enter the Amount Payable from the payout letter';
+        errors.push('disbursement.bpay.amount');
       }
 
       const hasBpayDetails = billerCode && referenceNumber;
       const hasBankDetails = accountName && bsbNumber && accountNumber && bank;
 
       if (!hasBpayDetails && !hasBankDetails) {
-        return 'Please fill in either BPAY details (Biller Code + Reference) OR bank account details (all 4 fields) for the financier';
+        // Mark all fields as needing attention
+        if (!billerCode) errors.push('disbursement.bpay.billerCode');
+        if (!referenceNumber) errors.push('disbursement.bpay.referenceNumber');
+        if (!accountName) errors.push('disbursement.payoutBank.accountName');
+        if (!bsbNumber) errors.push('disbursement.payoutBank.bsbNumber');
+        if (!accountNumber) errors.push('disbursement.payoutBank.accountNumber');
+        if (!bank) errors.push('disbursement.payoutBank.bank');
       }
 
-      if (hasBankDetails && !/^\d{6}$/.test(bsbNumber)) {
-        return 'Financier BSB must be exactly 6 digits';
+      if (hasBankDetails && bsbNumber && !/^\d{6}$/.test(bsbNumber)) {
+        errors.push('disbursement.payoutBank.bsbNumber');
       }
     }
 
     // Validate vendor details if NOT under finance OR if there's remaining balance
     if (!isUnderFinance || needsVendorPayment) {
       if (!hasVendorUpload) {
-        return 'Please upload proof of vendor\'s nominated bank account';
+        errors.push('disbursement.vendorUpload');
       }
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.bankAccount;
-      if (!accountName || !bsbNumber || !accountNumber || !bank) {
-        return 'Please fill in all vendor bank account fields (Account Name, BSB, Account Number, Bank)';
-      }
-      if (!/^\d{6}$/.test(bsbNumber)) {
-        return 'Vendor BSB must be exactly 6 digits';
+      if (!accountName) errors.push('disbursement.bankAccount.accountName');
+      if (!bsbNumber) errors.push('disbursement.bankAccount.bsbNumber');
+      if (!accountNumber) errors.push('disbursement.bankAccount.accountNumber');
+      if (!bank) errors.push('disbursement.bankAccount.bank');
+      
+      if (bsbNumber && !/^\d{6}$/.test(bsbNumber)) {
+        errors.push('disbursement.bankAccount.bsbNumber');
       }
     }
 
-    return null;
+    return errors;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,20 +216,16 @@ export function PrivateSaleForm() {
     
     if (!loanType) return;
     
-    // Validate buyer details
-    const buyerError = validateBuyerDetails();
-    if (buyerError) {
-      toast({
-        title: 'Required Fields Missing',
-        description: 'Please complete all fields marked with an asterisk (*)',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate asset details
-    const assetError = validateAssetDetails();
-    if (assetError) {
+    // Collect all validation errors
+    const allErrors: string[] = [
+      ...validateBuyerDetails(),
+      ...validateAssetDetails(),
+      ...validateInvoiceDetails(),
+      ...validateDisbursement(),
+    ];
+    
+    if (allErrors.length > 0) {
+      setValidationErrors(new Set(allErrors));
       toast({
         title: 'Required Fields Missing',
         description: 'Please complete all fields marked with an asterisk (*)',
@@ -216,27 +234,8 @@ export function PrivateSaleForm() {
       return;
     }
     
-    // Validate invoice details (Purchase Price is mandatory)
-    const purchasePrice = parseFloat(formData.invoice.purchasePrice.replace(/[^0-9.]/g, ''));
-    if (!formData.invoice.purchasePrice.trim() || isNaN(purchasePrice) || purchasePrice <= 0) {
-      toast({
-        title: 'Required Fields Missing',
-        description: 'Please complete all fields marked with an asterisk (*)',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    // Validate disbursement section
-    const disbursementError = validateDisbursement();
-    if (disbursementError) {
-      toast({
-        title: 'Required Fields Missing',
-        description: 'Please complete all fields marked with an asterisk (*)',
-        variant: 'destructive',
-      });
-      return;
-    }
+    // Clear any previous validation errors
+    setValidationErrors(new Set());
     
     // Validate: if under finance and amount payable > balance, show error
     if (isUnderFinance) {
@@ -264,6 +263,7 @@ export function PrivateSaleForm() {
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
+    setValidationErrors(new Set());
     toast({
       title: 'Form Reset',
       description: 'All fields have been cleared.',
@@ -337,6 +337,7 @@ export function PrivateSaleForm() {
           <BuyerDetailsSection
             data={formData.buyer}
             onChange={(buyer) => setFormData(prev => ({ ...prev, buyer }))}
+            validationErrors={validationErrors}
           />
 
           <AssetDetailsSection
@@ -347,11 +348,13 @@ export function PrivateSaleForm() {
             onUploadChange={setHasAssetUpload}
             trailerIncluded={trailerIncluded}
             onTrailerIncludedChange={setTrailerIncluded}
+            validationErrors={validationErrors}
           />
 
           <InvoiceDetailsSection
             data={formData.invoice}
             onChange={(invoice) => setFormData(prev => ({ ...prev, invoice }))}
+            validationErrors={validationErrors}
           />
 
           <DisbursementSection
@@ -364,6 +367,7 @@ export function PrivateSaleForm() {
             onVendorUploadChange={setHasVendorUpload}
             hasFinancierUpload={hasFinancierUpload}
             onFinancierUploadChange={setHasFinancierUpload}
+            validationErrors={validationErrors}
           />
 
 

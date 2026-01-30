@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,12 @@ interface AssetDetailsSectionProps {
 export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUploadChange, trailerIncluded, onTrailerIncludedChange }: AssetDetailsSectionProps) {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  
+  // Keep a ref to the latest data to avoid stale closures in async handlers
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   const isBoatLoan = loanType === 'boat' || loanType === 'commercial-boat';
 
@@ -43,37 +49,40 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
     try {
       const extractedData = await parsePdf(file, 'asset_details');
       
+      // Use ref to get the current state at the time extraction completes
+      const currentData = dataRef.current;
+      
       onChange({
         hull: {
-          make: extractedData.hull?.make || data.hull.make,
-          model: extractedData.hull?.model || data.hull.model,
-          series: extractedData.hull?.series || data.hull.series,
-          registration: extractedData.hull?.registration || data.hull.registration,
-          registrationExpiry: extractedData.hull?.registrationExpiry || data.hull.registrationExpiry,
-          buildDate: extractedData.hull?.buildDate || data.hull.buildDate,
-          identificationType: extractedData.hull?.identificationType || data.hull.identificationType,
-          hin: extractedData.hull?.hin || data.hull.hin,
-          colour: extractedData.hull?.colour || data.hull.colour,
-          fuelType: extractedData.hull?.fuelType || data.hull.fuelType,
-          bodyType: extractedData.hull?.bodyType || data.hull.bodyType,
-          odometer: extractedData.hull?.odometer || data.hull.odometer,
-          transmission: extractedData.hull?.transmission || data.hull.transmission,
+          make: extractedData.hull?.make || currentData.hull.make,
+          model: extractedData.hull?.model || currentData.hull.model,
+          series: extractedData.hull?.series || currentData.hull.series,
+          registration: extractedData.hull?.registration || currentData.hull.registration,
+          registrationExpiry: extractedData.hull?.registrationExpiry || currentData.hull.registrationExpiry,
+          buildDate: extractedData.hull?.buildDate || currentData.hull.buildDate,
+          identificationType: extractedData.hull?.identificationType || currentData.hull.identificationType,
+          hin: extractedData.hull?.hin || currentData.hull.hin,
+          colour: extractedData.hull?.colour || currentData.hull.colour,
+          fuelType: extractedData.hull?.fuelType || currentData.hull.fuelType,
+          bodyType: extractedData.hull?.bodyType || currentData.hull.bodyType,
+          odometer: extractedData.hull?.odometer || currentData.hull.odometer,
+          transmission: extractedData.hull?.transmission || currentData.hull.transmission,
         },
         trailer: {
-          make: extractedData.trailer?.make || data.trailer.make,
-          model: extractedData.trailer?.model || data.trailer.model,
-          registration: extractedData.trailer?.registration || data.trailer.registration,
-          registrationExpiry: extractedData.trailer?.registrationExpiry || data.trailer.registrationExpiry,
-          buildDate: extractedData.trailer?.buildDate || data.trailer.buildDate,
-          vin: extractedData.trailer?.vin || data.trailer.vin,
+          make: extractedData.trailer?.make || currentData.trailer.make,
+          model: extractedData.trailer?.model || currentData.trailer.model,
+          registration: extractedData.trailer?.registration || currentData.trailer.registration,
+          registrationExpiry: extractedData.trailer?.registrationExpiry || currentData.trailer.registrationExpiry,
+          buildDate: extractedData.trailer?.buildDate || currentData.trailer.buildDate,
+          vin: extractedData.trailer?.vin || currentData.trailer.vin,
         },
         motor: {
-          make: extractedData.motor?.make || data.motor.make,
-          model: extractedData.motor?.model || data.motor.model,
-          series: extractedData.motor?.series || data.motor.series,
-          engineSize: extractedData.motor?.engineSize || data.motor.engineSize,
-          buildDate: extractedData.motor?.buildDate || data.motor.buildDate,
-          engineNumber: extractedData.motor?.engineNumber || data.motor.engineNumber,
+          make: extractedData.motor?.make || currentData.motor.make,
+          model: extractedData.motor?.model || currentData.motor.model,
+          series: extractedData.motor?.series || currentData.motor.series,
+          engineSize: extractedData.motor?.engineSize || currentData.motor.engineSize,
+          buildDate: extractedData.motor?.buildDate || currentData.motor.buildDate,
+          engineNumber: extractedData.motor?.engineNumber || currentData.motor.engineNumber,
         },
       });
 

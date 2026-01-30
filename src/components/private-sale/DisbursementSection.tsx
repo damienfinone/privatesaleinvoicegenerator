@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +53,12 @@ export function DisbursementSection({
   const [uploadingOption, setUploadingOption] = useState<string | null>(null);
   const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
   const { toast } = useToast();
+  
+  // Keep a ref to the latest data to avoid stale closures in async handlers
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
 
   // Derive success state from props instead of local state
   const getSuccessOption = (option: 'bankAccount' | 'payoutBank') => {
@@ -129,32 +135,35 @@ export function DisbursementSection({
     try {
       const extractedData = await parsePdf(file, extractionType);
       
+      // Use ref to get the current state at the time extraction completes
+      const currentData = dataRef.current;
+      
       if (option === 'bankAccount') {
         onChange({
-          ...data,
+          ...currentData,
           bankAccount: {
-            accountName: extractedData.accountName || data.bankAccount.accountName,
-            bsbNumber: extractedData.bsbNumber || data.bankAccount.bsbNumber,
-            accountNumber: extractedData.accountNumber || data.bankAccount.accountNumber,
-            bank: extractedData.bank || data.bankAccount.bank,
+            accountName: extractedData.accountName || currentData.bankAccount.accountName,
+            bsbNumber: extractedData.bsbNumber || currentData.bankAccount.bsbNumber,
+            accountNumber: extractedData.accountNumber || currentData.bankAccount.accountNumber,
+            bank: extractedData.bank || currentData.bankAccount.bank,
           },
         });
         onVendorUploadChange(true);
       } else if (option === 'payoutBank') {
         onChange({
-          ...data,
+          ...currentData,
           payoutBank: {
-            accountName: extractedData.accountName || data.payoutBank.accountName,
-            bsbNumber: extractedData.bsbNumber || data.payoutBank.bsbNumber,
-            accountNumber: extractedData.accountNumber || data.payoutBank.accountNumber,
-            bank: extractedData.bank || data.payoutBank.bank,
-            amount: extractedData.payoutAmount || data.payoutBank.amount,
+            accountName: extractedData.accountName || currentData.payoutBank.accountName,
+            bsbNumber: extractedData.bsbNumber || currentData.payoutBank.bsbNumber,
+            accountNumber: extractedData.accountNumber || currentData.payoutBank.accountNumber,
+            bank: extractedData.bank || currentData.payoutBank.bank,
+            amount: extractedData.payoutAmount || currentData.payoutBank.amount,
           },
           bpay: {
-            ...data.bpay,
-            billerCode: extractedData.billerCode || data.bpay.billerCode,
-            referenceNumber: extractedData.referenceNumber || data.bpay.referenceNumber,
-            amount: extractedData.payoutAmount || data.bpay.amount,
+            ...currentData.bpay,
+            billerCode: extractedData.billerCode || currentData.bpay.billerCode,
+            referenceNumber: extractedData.referenceNumber || currentData.bpay.referenceNumber,
+            amount: extractedData.payoutAmount || currentData.bpay.amount,
           },
         });
         onFinancierUploadChange(true);
@@ -181,12 +190,12 @@ export function DisbursementSection({
 
       // Check if both bank and BPAY are now complete (for financier payout letter)
       if (option === 'payoutBank') {
-        const updatedBankDetails = (extractedData.accountName || data.payoutBank.accountName) && 
-                                   (extractedData.bsbNumber || data.payoutBank.bsbNumber) && 
-                                   (extractedData.accountNumber || data.payoutBank.accountNumber) && 
-                                   (extractedData.bank || data.payoutBank.bank);
-        const updatedBpayDetails = (extractedData.billerCode || data.bpay.billerCode) && 
-                                   (extractedData.referenceNumber || data.bpay.referenceNumber);
+        const updatedBankDetails = (extractedData.accountName || currentData.payoutBank.accountName) && 
+                                   (extractedData.bsbNumber || currentData.payoutBank.bsbNumber) && 
+                                   (extractedData.accountNumber || currentData.payoutBank.accountNumber) && 
+                                   (extractedData.bank || currentData.payoutBank.bank);
+        const updatedBpayDetails = (extractedData.billerCode || currentData.bpay.billerCode) && 
+                                   (extractedData.referenceNumber || currentData.bpay.referenceNumber);
         
         if (updatedBankDetails && updatedBpayDetails) {
           setShowPaymentMethodDialog(true);

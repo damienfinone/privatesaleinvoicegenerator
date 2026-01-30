@@ -198,8 +198,8 @@ export function PrivateSaleForm() {
     const buyerError = validateBuyerDetails();
     if (buyerError) {
       toast({
-        title: 'Buyer Details Validation Error',
-        description: buyerError,
+        title: 'Required Fields Missing',
+        description: 'Please complete all fields marked with an asterisk (*)',
         variant: 'destructive',
       });
       return;
@@ -209,8 +209,8 @@ export function PrivateSaleForm() {
     const assetError = validateAssetDetails();
     if (assetError) {
       toast({
-        title: 'Asset Details Validation Error',
-        description: assetError,
+        title: 'Required Fields Missing',
+        description: 'Please complete all fields marked with an asterisk (*)',
         variant: 'destructive',
       });
       return;
@@ -220,8 +220,8 @@ export function PrivateSaleForm() {
     const purchasePrice = parseFloat(formData.invoice.purchasePrice.replace(/[^0-9.]/g, ''));
     if (!formData.invoice.purchasePrice.trim() || isNaN(purchasePrice) || purchasePrice <= 0) {
       toast({
-        title: 'Invoice Details Validation Error',
-        description: 'Purchase Price is required and must be greater than zero',
+        title: 'Required Fields Missing',
+        description: 'Please complete all fields marked with an asterisk (*)',
         variant: 'destructive',
       });
       return;
@@ -231,8 +231,8 @@ export function PrivateSaleForm() {
     const disbursementError = validateDisbursement();
     if (disbursementError) {
       toast({
-        title: 'Disbursement Validation Error',
-        description: disbursementError,
+        title: 'Required Fields Missing',
+        description: 'Please complete all fields marked with an asterisk (*)',
         variant: 'destructive',
       });
       return;
@@ -333,7 +333,7 @@ export function PrivateSaleForm() {
 
       {/* Form - Only show when loan type is fully selected */}
       {isLoanTypeFullySelected && config && (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
           <BuyerDetailsSection
             data={formData.buyer}
             onChange={(buyer) => setFormData(prev => ({ ...prev, buyer }))}

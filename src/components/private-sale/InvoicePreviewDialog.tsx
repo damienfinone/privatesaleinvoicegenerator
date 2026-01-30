@@ -289,7 +289,7 @@ export function InvoicePreviewDialog({ open, onOpenChange, formData, loanType, i
             {/* Header */}
             <div className="text-center border-b-2 border-black pb-4 mb-4">
               <h1 className="text-2xl font-bold mb-1" style={{ letterSpacing: '0.05em' }}>
-                {isCommercial ? 'Finance One Commercial Pty Ltd' : 'Finance One Pty Ltd'}
+                {isCommercial ? 'Finance One Commercial Pty Ltd' : 'Fin One Pty Ltd'}
               </h1>
               <p className="text-xs" style={{ letterSpacing: '0.02em' }}>
                 {isCommercial ? 'ABN: 18 634 900 548' : 'ABN: 80 139 719 903'}

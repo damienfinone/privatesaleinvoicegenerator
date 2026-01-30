@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 
 interface DisbursementSectionProps {
   data: DisbursementOptions;
@@ -28,6 +29,7 @@ interface DisbursementSectionProps {
   onVendorUploadChange: (uploaded: boolean) => void;
   hasFinancierUpload: boolean;
   onFinancierUploadChange: (uploaded: boolean) => void;
+  validationErrors: Set<string>;
 }
 
 const parseAmount = (value: string): number => {
@@ -48,7 +50,8 @@ export function DisbursementSection({
   hasVendorUpload,
   onVendorUploadChange,
   hasFinancierUpload,
-  onFinancierUploadChange
+  onFinancierUploadChange,
+  validationErrors
 }: DisbursementSectionProps) {
   const [uploadingOption, setUploadingOption] = useState<string | null>(null);
   const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
@@ -59,8 +62,8 @@ export function DisbursementSection({
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
-
-  // Derive success state from props instead of local state
+  
+  const hasError = (field: string) => validationErrors.has(field);
   const getSuccessOption = (option: 'bankAccount' | 'payoutBank') => {
     if (option === 'bankAccount') return hasVendorUpload;
     if (option === 'payoutBank') return hasFinancierUpload;
@@ -339,6 +342,7 @@ export function DisbursementSection({
                   id="pb_accountName"
                   value={data.payoutBank.accountName}
                   onChange={(e) => handlePayoutBankChange('accountName', e.target.value)}
+                  className={cn(hasError('disbursement.payoutBank.accountName') && !data.payoutBank.accountName && 'border-destructive')}
                 />
               </div>
               <div className="space-y-2">
@@ -349,7 +353,10 @@ export function DisbursementSection({
                   onChange={(e) => handlePayoutBankChange('bsbNumber', e.target.value)}
                   maxLength={6}
                   placeholder="000000"
-                  className={getBsbError(data.payoutBank.bsbNumber) ? 'border-destructive' : ''}
+                  className={cn(
+                    (getBsbError(data.payoutBank.bsbNumber) || (hasError('disbursement.payoutBank.bsbNumber') && !data.payoutBank.bsbNumber)) && 
+                    'border-destructive'
+                  )}
                 />
                 {getBsbError(data.payoutBank.bsbNumber) && (
                   <p className="text-xs text-destructive">{getBsbError(data.payoutBank.bsbNumber)}</p>
@@ -361,6 +368,7 @@ export function DisbursementSection({
                   id="pb_accountNumber"
                   value={data.payoutBank.accountNumber}
                   onChange={(e) => handlePayoutBankChange('accountNumber', e.target.value)}
+                  className={cn(hasError('disbursement.payoutBank.accountNumber') && !data.payoutBank.accountNumber && 'border-destructive')}
                 />
               </div>
               <div className="space-y-2">
@@ -369,6 +377,7 @@ export function DisbursementSection({
                   id="pb_bank"
                   value={data.payoutBank.bank}
                   onChange={(e) => handlePayoutBankChange('bank', e.target.value)}
+                  className={cn(hasError('disbursement.payoutBank.bank') && !data.payoutBank.bank && 'border-destructive')}
                 />
               </div>
             </div>
@@ -380,6 +389,7 @@ export function DisbursementSection({
                   id="bpay_billerCode"
                   value={data.bpay.billerCode}
                   onChange={(e) => handleBpayChange('billerCode', e.target.value)}
+                  className={cn(hasError('disbursement.bpay.billerCode') && !data.bpay.billerCode && 'border-destructive')}
                 />
               </div>
               <div className="space-y-2">
@@ -388,6 +398,7 @@ export function DisbursementSection({
                   id="bpay_reference"
                   value={data.bpay.referenceNumber}
                   onChange={(e) => handleBpayChange('referenceNumber', e.target.value)}
+                  className={cn(hasError('disbursement.bpay.referenceNumber') && !data.bpay.referenceNumber && 'border-destructive')}
                 />
               </div>
               <div className="space-y-2">
@@ -397,6 +408,7 @@ export function DisbursementSection({
                   value={data.bpay.amount}
                   onChange={(val) => handleBpayChange('amount', val)}
                   placeholder="0.00"
+                  className={cn(hasError('disbursement.bpay.amount') && !data.bpay.amount && 'border-destructive')}
                 />
               </div>
             </div>
@@ -439,6 +451,7 @@ export function DisbursementSection({
                   id="ba_accountName"
                   value={data.bankAccount.accountName}
                   onChange={(e) => handleBankAccountChange('accountName', e.target.value)}
+                  className={cn(hasError('disbursement.bankAccount.accountName') && !data.bankAccount.accountName && 'border-destructive')}
                 />
               </div>
               <div className="space-y-2">
@@ -449,7 +462,10 @@ export function DisbursementSection({
                   onChange={(e) => handleBankAccountChange('bsbNumber', e.target.value)}
                   maxLength={6}
                   placeholder="000000"
-                  className={getBsbError(data.bankAccount.bsbNumber) ? 'border-destructive' : ''}
+                  className={cn(
+                    (getBsbError(data.bankAccount.bsbNumber) || (hasError('disbursement.bankAccount.bsbNumber') && !data.bankAccount.bsbNumber)) && 
+                    'border-destructive'
+                  )}
                 />
                 {getBsbError(data.bankAccount.bsbNumber) && (
                   <p className="text-xs text-destructive">{getBsbError(data.bankAccount.bsbNumber)}</p>
@@ -461,6 +477,7 @@ export function DisbursementSection({
                   id="ba_accountNumber"
                   value={data.bankAccount.accountNumber}
                   onChange={(e) => handleBankAccountChange('accountNumber', e.target.value)}
+                  className={cn(hasError('disbursement.bankAccount.accountNumber') && !data.bankAccount.accountNumber && 'border-destructive')}
                 />
               </div>
               <div className="space-y-2">
@@ -469,6 +486,7 @@ export function DisbursementSection({
                   id="ba_bank"
                   value={data.bankAccount.bank}
                   onChange={(e) => handleBankAccountChange('bank', e.target.value)}
+                  className={cn(hasError('disbursement.bankAccount.bank') && !data.bankAccount.bank && 'border-destructive')}
                 />
               </div>
             </div>

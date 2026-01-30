@@ -3,10 +3,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BuyerDetails } from '@/types/privateSaleForm';
+import { cn } from '@/lib/utils';
 
 interface BuyerDetailsSectionProps {
   data: BuyerDetails;
   onChange: (data: BuyerDetails) => void;
+  validationErrors: Set<string>;
 }
 
 // Australian phone number validation
@@ -21,7 +23,7 @@ const isValidAustralianPhone = (phone: string): boolean => {
   return mobileRegex.test(cleaned) || landlineRegex.test(cleaned);
 };
 
-export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps) {
+export function BuyerDetailsSection({ data, onChange, validationErrors }: BuyerDetailsSectionProps) {
   const [touched, setTouched] = useState(false);
   
   const handleChange = (field: keyof BuyerDetails, value: string) => {
@@ -29,6 +31,8 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
   };
 
   const phoneError = touched && data.contactNumber && !isValidAustralianPhone(data.contactNumber);
+  
+  const hasError = (field: string) => validationErrors.has(field);
 
   return (
     <Card>
@@ -44,6 +48,7 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
               value={data.name}
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="Enter buyer's full name"
+              className={cn(hasError('buyer.name') && !data.name.trim() && 'border-destructive focus-visible:ring-destructive')}
             />
           </div>
           <div className="space-y-2">
@@ -54,10 +59,13 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
               onChange={(e) => handleChange('contactNumber', e.target.value)}
               onBlur={() => setTouched(true)}
               placeholder="e.g. 0412 345 678"
-              className={phoneError ? 'border-red-500 focus-visible:ring-red-500' : ''}
+              className={cn(
+                (phoneError || (hasError('buyer.contactNumber') && (!data.contactNumber.trim() || !isValidAustralianPhone(data.contactNumber)))) && 
+                'border-destructive focus-visible:ring-destructive'
+              )}
             />
             {phoneError && (
-              <p className="text-xs text-red-500">
+              <p className="text-xs text-destructive">
                 Please enter a valid Australian phone number
               </p>
             )}
@@ -70,6 +78,7 @@ export function BuyerDetailsSection({ data, onChange }: BuyerDetailsSectionProps
             value={data.address}
             onChange={(e) => handleChange('address', e.target.value)}
             placeholder="Enter buyer's address"
+            className={cn(hasError('buyer.address') && !data.address.trim() && 'border-destructive focus-visible:ring-destructive')}
           />
         </div>
       </CardContent>

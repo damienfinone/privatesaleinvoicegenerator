@@ -3,13 +3,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InvoiceDetails } from '@/types/privateSaleForm';
 import { CurrencyInput } from '@/components/ui/currency-input';
+import { cn } from '@/lib/utils';
 
 interface InvoiceDetailsSectionProps {
   data: InvoiceDetails;
   onChange: (data: InvoiceDetails) => void;
+  validationErrors: Set<string>;
 }
 
-export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionProps) {
+export function InvoiceDetailsSection({ data, onChange, validationErrors }: InvoiceDetailsSectionProps) {
   const handleChange = (field: keyof InvoiceDetails, value: string) => {
     onChange({ ...data, [field]: value });
   };
@@ -44,6 +46,11 @@ export function InvoiceDetailsSection({ data, onChange }: InvoiceDetailsSectionP
               id="purchasePrice"
               value={data.purchasePrice}
               onChange={(val) => handleChange('purchasePrice', val)}
+              className={cn(
+                validationErrors.has('invoice.purchasePrice') && 
+                !data.purchasePrice.trim() && 
+                'border-destructive focus-visible:ring-destructive'
+              )}
             />
           </div>
           <div className="space-y-2">

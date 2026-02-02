@@ -208,12 +208,36 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             ? `Extracted: ${extractedFields.join(', ')}`
             : 'Document uploaded but no fields could be extracted',
         });
-      } else {
-        // Motor extraction to be added later
+      } else if (type === 'motor') {
+        const extractedData = await parseDocument(file, 'motor_details');
+        const currentData = dataRef.current;
+        
+        onChange({
+          ...currentData,
+          motor: {
+            ...currentData.motor,
+            make: extractedData.make || currentData.motor.make,
+            model: extractedData.model || currentData.motor.model,
+            series: extractedData.series || currentData.motor.series,
+            engineSize: extractedData.engineSize || currentData.motor.engineSize,
+            buildDate: extractedData.buildDate || currentData.motor.buildDate,
+            engineNumber: extractedData.engineNumber || currentData.motor.engineNumber,
+          },
+        });
+        
+        const extractedFields: string[] = [];
+        if (extractedData.make) extractedFields.push('Make');
+        if (extractedData.model) extractedFields.push('Model');
+        if (extractedData.engineSize) extractedFields.push('Engine Size');
+        if (extractedData.buildDate) extractedFields.push('Build Date');
+        if (extractedData.engineNumber) extractedFields.push('Engine Number');
+
         setHasUpload(true);
         toast({
-          title: 'Document uploaded',
-          description: `Motor document uploaded successfully. Extraction coming soon.`,
+          title: 'Motor document processed',
+          description: extractedFields.length > 0
+            ? `Extracted: ${extractedFields.join(', ')}`
+            : 'Document uploaded but no fields could be extracted',
         });
       }
     } catch (error) {

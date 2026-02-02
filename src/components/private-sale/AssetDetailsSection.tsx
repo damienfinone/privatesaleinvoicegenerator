@@ -18,15 +18,24 @@ interface AssetDetailsSectionProps {
   onUploadChange: (hasUpload: boolean) => void;
   hullIncluded: boolean;
   onHullIncludedChange: (included: boolean) => void;
+  hasHullUpload: boolean;
+  onHullUploadChange: (hasUpload: boolean) => void;
   motorIncluded: boolean;
   onMotorIncludedChange: (included: boolean) => void;
+  hasMotorUpload: boolean;
+  onMotorUploadChange: (hasUpload: boolean) => void;
   trailerIncluded: boolean;
   onTrailerIncludedChange: (included: boolean) => void;
+  hasTrailerUpload: boolean;
+  onTrailerUploadChange: (hasUpload: boolean) => void;
   validationErrors: Set<string>;
 }
 
-export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUploadChange, hullIncluded, onHullIncludedChange, motorIncluded, onMotorIncludedChange, trailerIncluded, onTrailerIncludedChange, validationErrors }: AssetDetailsSectionProps) {
+export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUploadChange, hullIncluded, onHullIncludedChange, hasHullUpload, onHullUploadChange, motorIncluded, onMotorIncludedChange, hasMotorUpload, onMotorUploadChange, trailerIncluded, onTrailerIncludedChange, hasTrailerUpload, onTrailerUploadChange, validationErrors }: AssetDetailsSectionProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingHull, setIsUploadingHull] = useState(false);
+  const [isUploadingMotor, setIsUploadingMotor] = useState(false);
+  const [isUploadingTrailer, setIsUploadingTrailer] = useState(false);
   const { toast } = useToast();
   
   // Keep a ref to the latest data to avoid stale closures in async handlers
@@ -108,6 +117,44 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Handler for watercraft-specific file uploads (hull, motor, trailer)
+  const handleWatercraftFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'hull' | 'motor' | 'trailer') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: 'Invalid file type',
+        description: 'Please upload a PDF file',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const setLoading = type === 'hull' ? setIsUploadingHull : type === 'motor' ? setIsUploadingMotor : setIsUploadingTrailer;
+    const setHasUpload = type === 'hull' ? onHullUploadChange : type === 'motor' ? onMotorUploadChange : onTrailerUploadChange;
+
+    setLoading(true);
+
+    try {
+      // For now, just mark as uploaded - extraction logic will be added later
+      setHasUpload(true);
+      toast({
+        title: 'Document uploaded',
+        description: `${type.charAt(0).toUpperCase() + type.slice(1)} document uploaded successfully. Extraction coming soon.`,
+      });
+    } catch (error) {
+      console.error('Error processing PDF:', error);
+      toast({
+        title: 'Error processing PDF',
+        description: error instanceof Error ? error.message : 'Failed to extract data',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -218,49 +265,79 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           </div>
         </div>
         {hullIncluded && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="hullMake">Make <span className="text-destructive">*</span></Label>
-              <Input id="hullMake" value={data.hull.make} onChange={(e) => handleHullChange('make', e.target.value)} className={cn(hasError('asset.hull.make') && !data.hull.make.trim() && 'border-destructive')} />
+          <>
+            {/* Hull Upload */}
+            <Label htmlFor="hullPdf" className="cursor-pointer block">
+              <div className={cn(
+                "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors mb-4",
+                hasError('asset.hull.upload') && !hasHullUpload ? "border-destructive" : "border-muted-foreground/25"
+              )}>
+                <div className="flex items-center gap-3">
+                  {hasHullUpload ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  ) : isUploadingHull ? (
+                    <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
+                  ) : (
+                    <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Upload Hull Document <span className="text-destructive">*</span></p>
+                    <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                  </div>
+                </div>
+                <Input
+                  id="hullPdf"
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => handleWatercraftFileUpload(e, 'hull')}
+                  className="hidden"
+                />
+              </div>
+            </Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="hullMake">Make <span className="text-destructive">*</span></Label>
+                <Input id="hullMake" value={data.hull.make} onChange={(e) => handleHullChange('make', e.target.value)} className={cn(hasError('asset.hull.make') && !data.hull.make.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullModel">Model <span className="text-destructive">*</span></Label>
+                <Input id="hullModel" value={data.hull.model} onChange={(e) => handleHullChange('model', e.target.value)} className={cn(hasError('asset.hull.model') && !data.hull.model.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullRego">Registration <span className="text-destructive">*</span></Label>
+                <Input id="hullRego" value={data.hull.registration} onChange={(e) => handleHullChange('registration', e.target.value)} className={cn(hasError('asset.hull.registration') && !data.hull.registration.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullRegoExpiry">Registration Expiry</Label>
+                <Input id="hullRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullBuildDate">Build Date <span className="text-destructive">*</span></Label>
+                <Input id="hullBuildDate" value={data.hull.buildDate} onChange={(e) => handleHullChange('buildDate', e.target.value)} className={cn(hasError('asset.hull.buildDate') && !data.hull.buildDate.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullColour">Colour</Label>
+                <Input id="hullColour" value={data.hull.colour} onChange={(e) => handleHullChange('colour', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullIdType">Identification Type <span className="text-destructive">*</span></Label>
+                <Select value={data.hull.identificationType} onValueChange={(value) => handleHullChange('identificationType', value)}>
+                  <SelectTrigger id="hullIdType" className={cn("bg-background", hasError('asset.hull.identificationType') && !data.hull.identificationType && 'border-destructive')}>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="HIN">Hull Identification Number (HIN)</SelectItem>
+                    <SelectItem value="SIN">Serial Identification Number (SIN)</SelectItem>
+                    <SelectItem value="UVI">Unique Vessel Identifier (UVI)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="hullHin">{data.hull.identificationType || 'Identification'} Number <span className="text-destructive">*</span></Label>
+                <Input id="hullHin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} placeholder="Enter identification number" className={cn(hasError('asset.hull.hin') && !data.hull.hin.trim() && 'border-destructive')} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullModel">Model <span className="text-destructive">*</span></Label>
-              <Input id="hullModel" value={data.hull.model} onChange={(e) => handleHullChange('model', e.target.value)} className={cn(hasError('asset.hull.model') && !data.hull.model.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullRego">Registration <span className="text-destructive">*</span></Label>
-              <Input id="hullRego" value={data.hull.registration} onChange={(e) => handleHullChange('registration', e.target.value)} className={cn(hasError('asset.hull.registration') && !data.hull.registration.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullRegoExpiry">Registration Expiry</Label>
-              <Input id="hullRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullBuildDate">Build Date <span className="text-destructive">*</span></Label>
-              <Input id="hullBuildDate" value={data.hull.buildDate} onChange={(e) => handleHullChange('buildDate', e.target.value)} className={cn(hasError('asset.hull.buildDate') && !data.hull.buildDate.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullColour">Colour</Label>
-              <Input id="hullColour" value={data.hull.colour} onChange={(e) => handleHullChange('colour', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullIdType">Identification Type <span className="text-destructive">*</span></Label>
-              <Select value={data.hull.identificationType} onValueChange={(value) => handleHullChange('identificationType', value)}>
-                <SelectTrigger id="hullIdType" className={cn("bg-background", hasError('asset.hull.identificationType') && !data.hull.identificationType && 'border-destructive')}>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-50">
-                  <SelectItem value="HIN">Hull Identification Number (HIN)</SelectItem>
-                  <SelectItem value="SIN">Serial Identification Number (SIN)</SelectItem>
-                  <SelectItem value="UVI">Unique Vessel Identifier (UVI)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="hullHin">{data.hull.identificationType || 'Identification'} Number <span className="text-destructive">*</span></Label>
-              <Input id="hullHin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value)} placeholder="Enter identification number" className={cn(hasError('asset.hull.hin') && !data.hull.hin.trim() && 'border-destructive')} />
-            </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -295,28 +372,58 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           </div>
         </div>
         {motorIncluded && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="motorMake">Make <span className="text-destructive">*</span></Label>
-              <Input id="motorMake" value={data.motor.make} onChange={(e) => handleMotorChange('make', e.target.value)} className={cn(hasError('asset.motor.make') && !data.motor.make.trim() && 'border-destructive')} />
+          <>
+            {/* Motor Upload */}
+            <Label htmlFor="motorPdf" className="cursor-pointer block">
+              <div className={cn(
+                "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors mb-4",
+                hasError('asset.motor.upload') && !hasMotorUpload ? "border-destructive" : "border-muted-foreground/25"
+              )}>
+                <div className="flex items-center gap-3">
+                  {hasMotorUpload ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  ) : isUploadingMotor ? (
+                    <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
+                  ) : (
+                    <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Upload Motor Document <span className="text-destructive">*</span></p>
+                    <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                  </div>
+                </div>
+                <Input
+                  id="motorPdf"
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => handleWatercraftFileUpload(e, 'motor')}
+                  className="hidden"
+                />
+              </div>
+            </Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="motorMake">Make <span className="text-destructive">*</span></Label>
+                <Input id="motorMake" value={data.motor.make} onChange={(e) => handleMotorChange('make', e.target.value)} className={cn(hasError('asset.motor.make') && !data.motor.make.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motorModel">Model <span className="text-destructive">*</span></Label>
+                <Input id="motorModel" value={data.motor.model} onChange={(e) => handleMotorChange('model', e.target.value)} className={cn(hasError('asset.motor.model') && !data.motor.model.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motorEngineSize">Engine Size</Label>
+                <Input id="motorEngineSize" value={data.motor.engineSize} onChange={(e) => handleMotorChange('engineSize', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motorBuildDate">Build Date <span className="text-destructive">*</span></Label>
+                <Input id="motorBuildDate" value={data.motor.buildDate} onChange={(e) => handleMotorChange('buildDate', e.target.value)} className={cn(hasError('asset.motor.buildDate') && !data.motor.buildDate.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="motorEngineNumber">Engine Number <span className="text-destructive">*</span></Label>
+                <Input id="motorEngineNumber" value={data.motor.engineNumber} onChange={(e) => handleMotorChange('engineNumber', e.target.value)} className={cn(hasError('asset.motor.engineNumber') && !data.motor.engineNumber.trim() && 'border-destructive')} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="motorModel">Model <span className="text-destructive">*</span></Label>
-              <Input id="motorModel" value={data.motor.model} onChange={(e) => handleMotorChange('model', e.target.value)} className={cn(hasError('asset.motor.model') && !data.motor.model.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="motorEngineSize">Engine Size</Label>
-              <Input id="motorEngineSize" value={data.motor.engineSize} onChange={(e) => handleMotorChange('engineSize', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="motorBuildDate">Build Date <span className="text-destructive">*</span></Label>
-              <Input id="motorBuildDate" value={data.motor.buildDate} onChange={(e) => handleMotorChange('buildDate', e.target.value)} className={cn(hasError('asset.motor.buildDate') && !data.motor.buildDate.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="motorEngineNumber">Engine Number <span className="text-destructive">*</span></Label>
-              <Input id="motorEngineNumber" value={data.motor.engineNumber} onChange={(e) => handleMotorChange('engineNumber', e.target.value)} className={cn(hasError('asset.motor.engineNumber') && !data.motor.engineNumber.trim() && 'border-destructive')} />
-            </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -353,32 +460,62 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
 
         {/* Trailer Fields - only show if trailer included */}
         {trailerIncluded === true && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="trailerMake">Make <span className="text-destructive">*</span></Label>
-              <Input id="trailerMake" value={data.trailer.make} onChange={(e) => handleTrailerChange('make', e.target.value)} className={cn(hasError('asset.trailer.make') && !data.trailer.make.trim() && 'border-destructive')} />
+          <>
+            {/* Trailer Upload */}
+            <Label htmlFor="trailerPdf" className="cursor-pointer block">
+              <div className={cn(
+                "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors mb-4",
+                hasError('asset.trailer.upload') && !hasTrailerUpload ? "border-destructive" : "border-muted-foreground/25"
+              )}>
+                <div className="flex items-center gap-3">
+                  {hasTrailerUpload ? (
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                  ) : isUploadingTrailer ? (
+                    <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
+                  ) : (
+                    <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">Upload Trailer Document <span className="text-destructive">*</span></p>
+                    <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                  </div>
+                </div>
+                <Input
+                  id="trailerPdf"
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => handleWatercraftFileUpload(e, 'trailer')}
+                  className="hidden"
+                />
+              </div>
+            </Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="trailerMake">Make <span className="text-destructive">*</span></Label>
+                <Input id="trailerMake" value={data.trailer.make} onChange={(e) => handleTrailerChange('make', e.target.value)} className={cn(hasError('asset.trailer.make') && !data.trailer.make.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="trailerModel">Model <span className="text-destructive">*</span></Label>
+                <Input id="trailerModel" value={data.trailer.model} onChange={(e) => handleTrailerChange('model', e.target.value)} className={cn(hasError('asset.trailer.model') && !data.trailer.model.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="trailerRego">Registration <span className="text-destructive">*</span></Label>
+                <Input id="trailerRego" value={data.trailer.registration} onChange={(e) => handleTrailerChange('registration', e.target.value)} className={cn(hasError('asset.trailer.registration') && !data.trailer.registration.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="trailerRegoExpiry">Registration Expiry</Label>
+                <Input id="trailerRegoExpiry" value={data.trailer.registrationExpiry} onChange={(e) => handleTrailerChange('registrationExpiry', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="trailerBuildDate">Build Date <span className="text-destructive">*</span></Label>
+                <Input id="trailerBuildDate" value={data.trailer.buildDate} onChange={(e) => handleTrailerChange('buildDate', e.target.value)} className={cn(hasError('asset.trailer.buildDate') && !data.trailer.buildDate.trim() && 'border-destructive')} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="trailerVin">VIN <span className="text-destructive">*</span></Label>
+                <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value)} className={cn(hasError('asset.trailer.vin') && !data.trailer.vin.trim() && 'border-destructive')} />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="trailerModel">Model <span className="text-destructive">*</span></Label>
-              <Input id="trailerModel" value={data.trailer.model} onChange={(e) => handleTrailerChange('model', e.target.value)} className={cn(hasError('asset.trailer.model') && !data.trailer.model.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="trailerRego">Registration <span className="text-destructive">*</span></Label>
-              <Input id="trailerRego" value={data.trailer.registration} onChange={(e) => handleTrailerChange('registration', e.target.value)} className={cn(hasError('asset.trailer.registration') && !data.trailer.registration.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="trailerRegoExpiry">Registration Expiry</Label>
-              <Input id="trailerRegoExpiry" value={data.trailer.registrationExpiry} onChange={(e) => handleTrailerChange('registrationExpiry', e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="trailerBuildDate">Build Date <span className="text-destructive">*</span></Label>
-              <Input id="trailerBuildDate" value={data.trailer.buildDate} onChange={(e) => handleTrailerChange('buildDate', e.target.value)} className={cn(hasError('asset.trailer.buildDate') && !data.trailer.buildDate.trim() && 'border-destructive')} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="trailerVin">VIN <span className="text-destructive">*</span></Label>
-              <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value)} className={cn(hasError('asset.trailer.vin') && !data.trailer.vin.trim() && 'border-destructive')} />
-            </div>
-          </div>
+          </>
         )}
       </div>
     </>
@@ -390,34 +527,36 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         <CardTitle className="text-lg">Asset Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* PDF Upload */}
-        <Label htmlFor="assetPdf" className="cursor-pointer block">
-          <div className={cn(
-            "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors",
-            hasError('asset.upload') && !hasUpload ? "border-destructive" : "border-muted-foreground/25"
-          )}>
-            <div className="flex items-center gap-3">
-              {hasUpload ? (
-                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-              ) : isUploading ? (
-                <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
-              ) : (
-                <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-              )}
-              <div className="flex-1">
-                <p className="text-sm font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
-                <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+        {/* Single PDF Upload - only for vehicle loans */}
+        {!isBoatLoan && (
+          <Label htmlFor="assetPdf" className="cursor-pointer block">
+            <div className={cn(
+              "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors",
+              hasError('asset.upload') && !hasUpload ? "border-destructive" : "border-muted-foreground/25"
+            )}>
+              <div className="flex items-center gap-3">
+                {hasUpload ? (
+                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
+                ) : isUploading ? (
+                  <Loader2 className="h-5 w-5 text-muted-foreground flex-shrink-0 animate-spin" />
+                ) : (
+                  <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                )}
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
+                  <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                </div>
               </div>
+              <Input
+                id="assetPdf"
+                type="file"
+                accept=".pdf"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
             </div>
-            <Input
-              id="assetPdf"
-              type="file"
-              accept=".pdf"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-          </div>
-        </Label>
+          </Label>
+        )}
 
         {isBoatLoan ? renderBoatFields() : renderVehicleFields()}
       </CardContent>

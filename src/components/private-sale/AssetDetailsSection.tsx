@@ -176,12 +176,44 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             ? `Extracted: ${extractedFields.join(', ')}`
             : 'Document uploaded but no fields could be extracted',
         });
+      } else if (type === 'trailer') {
+        const extractedData = await parsePdf(file, 'trailer_details');
+        const currentData = dataRef.current;
+        
+        onChange({
+          ...currentData,
+          trailer: {
+            ...currentData.trailer,
+            make: extractedData.make || currentData.trailer.make,
+            model: extractedData.model || currentData.trailer.model,
+            registration: extractedData.registration || currentData.trailer.registration,
+            registrationExpiry: extractedData.registrationExpiry || currentData.trailer.registrationExpiry,
+            buildDate: extractedData.buildDate || currentData.trailer.buildDate,
+            vin: extractedData.vin || currentData.trailer.vin,
+          },
+        });
+        
+        const extractedFields: string[] = [];
+        if (extractedData.make) extractedFields.push('Make');
+        if (extractedData.model) extractedFields.push('Model');
+        if (extractedData.registration) extractedFields.push('Registration');
+        if (extractedData.registrationExpiry) extractedFields.push('Registration Expiry');
+        if (extractedData.buildDate) extractedFields.push('Build Date');
+        if (extractedData.vin) extractedFields.push('VIN');
+
+        setHasUpload(true);
+        toast({
+          title: 'Trailer document processed',
+          description: extractedFields.length > 0
+            ? `Extracted: ${extractedFields.join(', ')}`
+            : 'Document uploaded but no fields could be extracted',
+        });
       } else {
-        // Motor and trailer extraction to be added later
+        // Motor extraction to be added later
         setHasUpload(true);
         toast({
           title: 'Document uploaded',
-          description: `${type.charAt(0).toUpperCase() + type.slice(1)} document uploaded successfully. Extraction coming soon.`,
+          description: `Motor document uploaded successfully. Extraction coming soon.`,
         });
       }
     } catch (error) {

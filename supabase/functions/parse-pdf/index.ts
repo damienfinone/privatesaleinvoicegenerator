@@ -132,6 +132,28 @@ Field mapping hints for Queensland trailer registration documents:
 
 Only return the JSON object, no other text.`;
         break;
+      
+      case 'motor_details':
+        extractionPrompt = `Analyze this image/document of a boat motor serial plate or registration. Extract motor/engine details. Return a JSON object with these fields (use empty string if not found):
+{
+  "make": "",
+  "model": "",
+  "engineSize": "",
+  "buildDate": "",
+  "engineNumber": ""
+}
+
+Field mapping hints for motor serial plates:
+- "make" = Manufacturer name (e.g., Mercury Marine, Yamaha, Honda, Suzuki, Evinrude)
+- "model" = Model designation (e.g., 50ELPT 4S, F115, DF90A)
+- "engineSize" = Horsepower (HP) value (e.g., "50HP", "115HP") - look for "HP" followed by number
+- "buildDate" = Manufacturing date (e.g., "MAY 2008", "2020") - look for month/year or just year
+- "engineNumber" = Serial number (the unique identifier, e.g., 1C081594)
+
+Only return the JSON object, no other text.`;
+        break;
+      
+      case 'bank_account':
         extractionPrompt = `Analyze this PDF document which contains proof of a bank account. Extract the banking details. Return a JSON object with these fields (use empty string if not found):
 {
   "accountName": "",

@@ -54,6 +54,9 @@ export function PrivateSaleForm() {
   const [hasVendorUpload, setHasVendorUpload] = useState(false);
   const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
   const [hasAssetUpload, setHasAssetUpload] = useState(false);
+  const [hasHullUpload, setHasHullUpload] = useState(false);
+  const [hasMotorUpload, setHasMotorUpload] = useState(false);
+  const [hasTrailerUpload, setHasTrailerUpload] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -92,10 +95,17 @@ export function PrivateSaleForm() {
 
   const validateAssetDetails = (): string[] => {
     const errors: string[] = [];
-    if (!hasAssetUpload) errors.push('asset.upload');
+    const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
+    // For vehicles, require single asset upload; for watercraft, require individual uploads
+    if (!isWatercraft) {
+      if (!hasAssetUpload) errors.push('asset.upload');
+    } else {
+      if (hullIncluded && !hasHullUpload) errors.push('asset.hull.upload');
+      if (motorIncluded && !hasMotorUpload) errors.push('asset.motor.upload');
+      if (trailerIncluded && !hasTrailerUpload) errors.push('asset.trailer.upload');
+    }
     
     const { hull, motor } = formData.asset;
-    const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
     
     // For vehicle loans (commercial/consumer)
     if (!isWatercraft) {
@@ -269,6 +279,9 @@ export function PrivateSaleForm() {
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
+    setHasHullUpload(false);
+    setHasMotorUpload(false);
+    setHasTrailerUpload(false);
     setValidationErrors(new Set());
     toast({
       title: 'Form Reset',
@@ -311,6 +324,9 @@ export function PrivateSaleForm() {
       setHasVendorUpload(false);
       setHasFinancierUpload(false);
       setHasAssetUpload(false);
+      setHasHullUpload(false);
+      setHasMotorUpload(false);
+      setHasTrailerUpload(false);
     }
     
     setLoanType(newType);
@@ -356,10 +372,16 @@ export function PrivateSaleForm() {
             onUploadChange={setHasAssetUpload}
             hullIncluded={hullIncluded}
             onHullIncludedChange={setHullIncluded}
+            hasHullUpload={hasHullUpload}
+            onHullUploadChange={setHasHullUpload}
             motorIncluded={motorIncluded}
             onMotorIncludedChange={setMotorIncluded}
+            hasMotorUpload={hasMotorUpload}
+            onMotorUploadChange={setHasMotorUpload}
             trailerIncluded={trailerIncluded}
             onTrailerIncludedChange={setTrailerIncluded}
+            hasTrailerUpload={hasTrailerUpload}
+            onTrailerUploadChange={setHasTrailerUpload}
             validationErrors={validationErrors}
           />
 

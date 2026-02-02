@@ -12,11 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    const { pdfBase64, extractionType } = await req.json();
+    const { pdfBase64, fileBase64, mimeType, extractionType } = await req.json();
+    
+    // Support both old pdfBase64 param and new fileBase64 param
+    const base64Data = fileBase64 || pdfBase64;
+    const contentType = mimeType || 'application/pdf';
 
-    if (!pdfBase64) {
+    if (!base64Data) {
       return new Response(
-        JSON.stringify({ success: false, error: 'No PDF data provided' }),
+        JSON.stringify({ success: false, error: 'No file data provided' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -176,7 +180,7 @@ Only return the JSON object, no other text.`;
         );
     }
 
-    console.log(`Processing PDF for extraction type: ${extractionType}`);
+    console.log(`Processing document for extraction type: ${extractionType}, contentType: ${contentType}`);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -197,7 +201,7 @@ Only return the JSON object, no other text.`;
               {
                 type: 'image_url',
                 image_url: {
-                  url: `data:application/pdf;base64,${pdfBase64}`
+                  url: `data:${contentType};base64,${base64Data}`
                 }
               }
             ]

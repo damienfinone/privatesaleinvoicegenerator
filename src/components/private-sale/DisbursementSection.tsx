@@ -3,9 +3,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, AlertCircle, Camera } from 'lucide-react';
 import { DisbursementOptions } from '@/types/privateSaleForm';
-import { parsePdf, ExtractionType } from '@/lib/pdfParser';
+import { parseDocument, isValidFileType, getAcceptString, ExtractionType } from '@/lib/pdfParser';
 import { useToast } from '@/hooks/use-toast';
 import { CurrencyInput } from '@/components/ui/currency-input';
 import {
@@ -124,10 +124,10 @@ export function DisbursementSection({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
+    if (!isValidFileType(file)) {
       toast({
         title: 'Invalid file type',
-        description: 'Please upload a PDF file',
+        description: 'Please upload a PDF or image file (JPG, PNG, HEIC)',
         variant: 'destructive',
       });
       return;
@@ -136,7 +136,7 @@ export function DisbursementSection({
     setUploadingOption(option);
 
     try {
-      const extractedData = await parsePdf(file, extractionType);
+      const extractedData = await parseDocument(file, extractionType);
       
       // Use ref to get the current state at the time extraction completes
       const currentData = dataRef.current;
@@ -184,10 +184,10 @@ export function DisbursementSection({
       if (extractedData.payoutAmount) fieldsPopulated.push('Amount');
       
       toast({
-        title: 'PDF processed successfully',
+        title: 'Document processed successfully',
         description: fieldsPopulated.length > 0 
           ? `Extracted: ${fieldsPopulated.join(', ')}`
-          : 'No details could be extracted from this PDF. Please enter manually.',
+          : 'No details could be extracted from this document. Please enter manually.',
         variant: fieldsPopulated.length > 0 ? 'default' : 'destructive',
       });
 
@@ -205,9 +205,9 @@ export function DisbursementSection({
         }
       }
     } catch (error) {
-      console.error('Error processing PDF:', error);
+      console.error('Error processing document:', error);
       toast({
-        title: 'Error processing PDF',
+        title: 'Error processing document',
         description: error instanceof Error ? error.message : 'Failed to extract data',
         variant: 'destructive',
       });
@@ -261,7 +261,7 @@ export function DisbursementSection({
     extractionType, 
     inputId,
     title,
-    subtitle = "Fields below will be auto-populated",
+    subtitle = "PDF or photo • Fields will be auto-populated",
     showError = false
   }: { 
     option: 'bankAccount' | 'payoutBank'; 
@@ -292,7 +292,8 @@ export function DisbursementSection({
         <Input
           id={inputId}
           type="file"
-          accept=".pdf"
+          accept={getAcceptString()}
+          capture="environment"
           onChange={(e) => handleFileUpload(e, option, extractionType)}
           className="hidden"
         />

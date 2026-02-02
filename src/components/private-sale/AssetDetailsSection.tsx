@@ -3,9 +3,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Loader2, CheckCircle } from 'lucide-react';
+import { Upload, Loader2, CheckCircle, Camera } from 'lucide-react';
 import { AssetDetails } from '@/types/privateSaleForm';
-import { parsePdf } from '@/lib/pdfParser';
+import { parseDocument, isValidFileType, getAcceptString } from '@/lib/pdfParser';
 import { useToast } from '@/hooks/use-toast';
 import { LoanType } from './LoanTypeSelector';
 import { cn } from '@/lib/utils';
@@ -52,10 +52,10 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
+    if (!isValidFileType(file)) {
       toast({
         title: 'Invalid file type',
-        description: 'Please upload a PDF file',
+        description: 'Please upload a PDF or image file (JPG, PNG, HEIC)',
         variant: 'destructive',
       });
       return;
@@ -64,7 +64,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
     setIsUploading(true);
 
     try {
-      const extractedData = await parsePdf(file, 'asset_details');
+      const extractedData = await parseDocument(file, 'asset_details');
       
       // Use ref to get the current state at the time extraction completes
       const currentData = dataRef.current;
@@ -105,13 +105,13 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
 
       onUploadChange(true);
       toast({
-        title: 'PDF processed successfully',
+        title: 'Document processed successfully',
         description: 'Asset details have been extracted and populated',
       });
     } catch (error) {
-      console.error('Error processing PDF:', error);
+      console.error('Error processing document:', error);
       toast({
-        title: 'Error processing PDF',
+        title: 'Error processing document',
         description: error instanceof Error ? error.message : 'Failed to extract data',
         variant: 'destructive',
       });
@@ -125,10 +125,10 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
+    if (!isValidFileType(file)) {
       toast({
         title: 'Invalid file type',
-        description: 'Please upload a PDF file',
+        description: 'Please upload a PDF or image file (JPG, PNG, HEIC)',
         variant: 'destructive',
       });
       return;
@@ -141,7 +141,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
 
     try {
       if (type === 'hull') {
-        const extractedData = await parsePdf(file, 'hull_details');
+        const extractedData = await parseDocument(file, 'hull_details');
         const currentData = dataRef.current;
         
         onChange({
@@ -177,7 +177,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             : 'Document uploaded but no fields could be extracted',
         });
       } else if (type === 'trailer') {
-        const extractedData = await parsePdf(file, 'trailer_details');
+        const extractedData = await parseDocument(file, 'trailer_details');
         const currentData = dataRef.current;
         
         onChange({
@@ -217,9 +217,9 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         });
       }
     } catch (error) {
-      console.error('Error processing PDF:', error);
+      console.error('Error processing document:', error);
       toast({
-        title: 'Error processing PDF',
+        title: 'Error processing document',
         description: error instanceof Error ? error.message : 'Failed to extract data',
         variant: 'destructive',
       });
@@ -352,13 +352,14 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                   )}
                   <div className="flex-1">
                     <p className="text-sm font-medium">Upload Hull Document <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                    <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
                   </div>
                 </div>
                 <Input
                   id="hullPdf"
                   type="file"
-                  accept=".pdf"
+                  accept={getAcceptString()}
+                  capture="environment"
                   onChange={(e) => handleWatercraftFileUpload(e, 'hull')}
                   className="hidden"
                 />
@@ -459,13 +460,14 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                   )}
                   <div className="flex-1">
                     <p className="text-sm font-medium">Upload Motor Document <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                    <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
                   </div>
                 </div>
                 <Input
                   id="motorPdf"
                   type="file"
-                  accept=".pdf"
+                  accept={getAcceptString()}
+                  capture="environment"
                   onChange={(e) => handleWatercraftFileUpload(e, 'motor')}
                   className="hidden"
                 />
@@ -547,13 +549,14 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                   )}
                   <div className="flex-1">
                     <p className="text-sm font-medium">Upload Trailer Document <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                    <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
                   </div>
                 </div>
                 <Input
                   id="trailerPdf"
                   type="file"
-                  accept=".pdf"
+                  accept={getAcceptString()}
+                  capture="environment"
                   onChange={(e) => handleWatercraftFileUpload(e, 'trailer')}
                   className="hidden"
                 />
@@ -614,13 +617,14 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                 )}
                 <div className="flex-1">
                   <p className="text-sm font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
-                  <p className="text-xs text-muted-foreground">Fields below will be auto-populated</p>
+                  <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
                 </div>
               </div>
               <Input
                 id="assetPdf"
                 type="file"
-                accept=".pdf"
+                accept={getAcceptString()}
+                capture="environment"
                 onChange={handleFileUpload}
                 className="hidden"
               />

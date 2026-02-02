@@ -2,28 +2,51 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type ExtractionType = 'asset_details' | 'hull_details' | 'motor_details' | 'trailer_details' | 'bank_account' | 'payout_letter_bank' | 'payout_letter_bpay';
 
-export async function parsePdf(file: File, extractionType: ExtractionType) {
+const SUPPORTED_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg', 
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+];
+
+export function isValidFileType(file: File): boolean {
+  return SUPPORTED_TYPES.includes(file.type) || file.type.startsWith('image/');
+}
+
+export function getAcceptString(): string {
+  return '.pdf,image/*';
+}
+
+export async function parseDocument(file: File, extractionType: ExtractionType) {
   // Convert file to base64
   const base64 = await fileToBase64(file);
+  const mimeType = file.type || 'application/octet-stream';
   
   const { data, error } = await supabase.functions.invoke('parse-pdf', {
     body: { 
-      pdfBase64: base64,
+      fileBase64: base64,
+      mimeType,
       extractionType 
     },
   });
 
   if (error) {
-    console.error('Error parsing PDF:', error);
-    throw new Error(error.message || 'Failed to parse PDF');
+    console.error('Error parsing document:', error);
+    throw new Error(error.message || 'Failed to parse document');
   }
 
   if (!data.success) {
-    throw new Error(data.error || 'Failed to extract data from PDF');
+    throw new Error(data.error || 'Failed to extract data from document');
   }
 
   return data.data;
 }
+
+// Legacy function name for backwards compatibility
+export const parsePdf = parseDocument;
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {

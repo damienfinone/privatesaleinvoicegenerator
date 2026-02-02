@@ -105,7 +105,29 @@ Field mapping hints for Queensland boat registration documents:
 Only return the JSON object, no other text.`;
         break;
       
-      case 'bank_account':
+      case 'trailer_details':
+        extractionPrompt = `Analyze this trailer registration PDF document and extract trailer details. Return a JSON object with these fields (use empty string if not found):
+{
+  "make": "",
+  "model": "",
+  "registration": "",
+  "registrationExpiry": "",
+  "buildDate": "",
+  "vin": "",
+  "atm": ""
+}
+
+Field mapping hints for Queensland trailer registration documents:
+- "make" = Vehicle make (e.g., BROOKER, QUINTREX) - often shown after "Vehicle:" label
+- "model" = Model if available
+- "registration" = Registration number (e.g., FP1627)
+- "registrationExpiry" = Next registration expiry date (look for 12 months row)
+- "buildDate" = Year of manufacture if shown
+- "vin" = VIN or chassis number if present
+- "atm" = Aggregate Trailer Mass (e.g., "ATM UP TO 1.02T" means 1.02 tonnes)
+
+Only return the JSON object, no other text.`;
+        break;
         extractionPrompt = `Analyze this PDF document which contains proof of a bank account. Extract the banking details. Return a JSON object with these fields (use empty string if not found):
 {
   "accountName": "",

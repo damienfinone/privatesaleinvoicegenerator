@@ -140,12 +140,50 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
     setLoading(true);
 
     try {
-      // For now, just mark as uploaded - extraction logic will be added later
-      setHasUpload(true);
-      toast({
-        title: 'Document uploaded',
-        description: `${type.charAt(0).toUpperCase() + type.slice(1)} document uploaded successfully. Extraction coming soon.`,
-      });
+      if (type === 'hull') {
+        const extractedData = await parsePdf(file, 'hull_details');
+        const currentData = dataRef.current;
+        
+        onChange({
+          ...currentData,
+          hull: {
+            ...currentData.hull,
+            make: extractedData.make || currentData.hull.make,
+            model: extractedData.model || currentData.hull.model,
+            registration: extractedData.registration || currentData.hull.registration,
+            registrationExpiry: extractedData.registrationExpiry || currentData.hull.registrationExpiry,
+            buildDate: extractedData.buildDate || currentData.hull.buildDate,
+            hin: extractedData.hin || currentData.hull.hin,
+            colour: extractedData.colour || currentData.hull.colour,
+            bodyType: extractedData.bodyType || currentData.hull.bodyType,
+          },
+        });
+        
+        const extractedFields: string[] = [];
+        if (extractedData.make) extractedFields.push('Make');
+        if (extractedData.model) extractedFields.push('Model');
+        if (extractedData.registration) extractedFields.push('Registration');
+        if (extractedData.registrationExpiry) extractedFields.push('Registration Expiry');
+        if (extractedData.buildDate) extractedFields.push('Build Date');
+        if (extractedData.hin) extractedFields.push('HIN');
+        if (extractedData.colour) extractedFields.push('Colour');
+        if (extractedData.bodyType) extractedFields.push('Body Type');
+
+        setHasUpload(true);
+        toast({
+          title: 'Hull document processed',
+          description: extractedFields.length > 0
+            ? `Extracted: ${extractedFields.join(', ')}`
+            : 'Document uploaded but no fields could be extracted',
+        });
+      } else {
+        // Motor and trailer extraction to be added later
+        setHasUpload(true);
+        toast({
+          title: 'Document uploaded',
+          description: `${type.charAt(0).toUpperCase() + type.slice(1)} document uploaded successfully. Extraction coming soon.`,
+        });
+      }
     } catch (error) {
       console.error('Error processing PDF:', error);
       toast({

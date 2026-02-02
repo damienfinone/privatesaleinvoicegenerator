@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type ExtractionType = 'asset_details' | 'bank_account' | 'payout_letter_bank' | 'payout_letter_bpay';
+export type ExtractionType = 'asset_details' | 'hull_details' | 'motor_details' | 'trailer_details' | 'bank_account' | 'payout_letter_bank' | 'payout_letter_bpay';
 
 export async function parsePdf(file: File, extractionType: ExtractionType) {
   // Convert file to base64

@@ -75,6 +75,36 @@ Field mapping hints:
 Only return the JSON object, no other text.`;
         break;
       
+      case 'hull_details':
+        extractionPrompt = `Analyze this boat/ship registration PDF document and extract hull details. Return a JSON object with these fields (use empty string if not found):
+{
+  "make": "",
+  "model": "",
+  "registration": "",
+  "registrationExpiry": "",
+  "buildDate": "",
+  "hin": "",
+  "colour": "",
+  "bodyType": "",
+  "hullMaterial": "",
+  "length": ""
+}
+
+Field mapping hints for Queensland boat registration documents:
+- "make" = Make (e.g., BROOKER, QUINTREX, STACER)
+- "model" = Model (e.g., RUNABOUT, SPORTSMAN)
+- "registration" = Registration number (e.g., AGW 20Q)
+- "registrationExpiry" = Next registration expiry date or Registration Due Date
+- "buildDate" = Year field (e.g., 2009)
+- "hin" = Hull serial no (e.g., AUBMPL0897I808) - this is the Hull Identification Number
+- "colour" = Colour (e.g., BLU for blue, WHT for white)
+- "bodyType" = Body shape (e.g., OPEN/DINGHY/RUNABOUT)
+- "hullMaterial" = Hull material type (e.g., ALUMINIUM, FIBREGLASS)
+- "length" = Length in metres
+
+Only return the JSON object, no other text.`;
+        break;
+      
       case 'bank_account':
         extractionPrompt = `Analyze this PDF document which contains proof of a bank account. Extract the banking details. Return a JSON object with these fields (use empty string if not found):
 {

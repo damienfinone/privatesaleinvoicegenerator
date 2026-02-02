@@ -48,7 +48,9 @@ export function PrivateSaleForm() {
   const [formData, setFormData] = useState<PrivateSaleFormData>(initialFormData);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isUnderFinance, setIsUnderFinance] = useState<boolean | null>(null);
-  const [trailerIncluded, setTrailerIncluded] = useState<boolean | null>(null);
+  const [hullIncluded, setHullIncluded] = useState<boolean>(true);
+  const [motorIncluded, setMotorIncluded] = useState<boolean>(true);
+  const [trailerIncluded, setTrailerIncluded] = useState<boolean>(true);
   const [hasVendorUpload, setHasVendorUpload] = useState(false);
   const [hasFinancierUpload, setHasFinancierUpload] = useState(false);
   const [hasAssetUpload, setHasAssetUpload] = useState(false);
@@ -111,17 +113,17 @@ export function PrivateSaleForm() {
       if (!hull.odometer.trim()) errors.push('asset.hull.odometer');
       if (!hull.transmission.trim()) errors.push('asset.hull.transmission');
     } else {
-      // For boat loans - validate hull details
-      if (!hull.make.trim()) errors.push('asset.hull.make');
-      if (!hull.model.trim()) errors.push('asset.hull.model');
-      if (!hull.buildDate.trim()) errors.push('asset.hull.buildDate');
-      if (!hull.registration.trim()) errors.push('asset.hull.registration');
-      if (!hull.identificationType.trim()) errors.push('asset.hull.identificationType');
-      if (!hull.hin.trim()) errors.push('asset.hull.hin');
+      // For boat loans - validate hull details only if hull is included
+      if (hullIncluded) {
+        if (!hull.make.trim()) errors.push('asset.hull.make');
+        if (!hull.model.trim()) errors.push('asset.hull.model');
+        if (!hull.buildDate.trim()) errors.push('asset.hull.buildDate');
+        if (!hull.registration.trim()) errors.push('asset.hull.registration');
+        if (!hull.identificationType.trim()) errors.push('asset.hull.identificationType');
+        if (!hull.hin.trim()) errors.push('asset.hull.hin');
+      }
       
       // Validate trailer details only if trailer is included
-      if (trailerIncluded === null) errors.push('asset.trailerIncluded');
-      
       if (trailerIncluded) {
         const { trailer } = formData.asset;
         if (!trailer.make.trim()) errors.push('asset.trailer.make');
@@ -131,11 +133,13 @@ export function PrivateSaleForm() {
         if (!trailer.vin.trim()) errors.push('asset.trailer.vin');
       }
       
-      // Validate motor details (mandatory for watercraft)
-      if (!motor.make.trim()) errors.push('asset.motor.make');
-      if (!motor.model.trim()) errors.push('asset.motor.model');
-      if (!motor.buildDate.trim()) errors.push('asset.motor.buildDate');
-      if (!motor.engineNumber.trim()) errors.push('asset.motor.engineNumber');
+      // Validate motor details only if motor is included
+      if (motorIncluded) {
+        if (!motor.make.trim()) errors.push('asset.motor.make');
+        if (!motor.model.trim()) errors.push('asset.motor.model');
+        if (!motor.buildDate.trim()) errors.push('asset.motor.buildDate');
+        if (!motor.engineNumber.trim()) errors.push('asset.motor.engineNumber');
+      }
     }
     return errors;
   };
@@ -259,7 +263,9 @@ export function PrivateSaleForm() {
     setLoanType(null);
     setDivision(null);
     setIsUnderFinance(null);
-    setTrailerIncluded(null);
+    setHullIncluded(true);
+    setMotorIncluded(true);
+    setTrailerIncluded(true);
     setHasVendorUpload(false);
     setHasFinancierUpload(false);
     setHasAssetUpload(false);
@@ -299,7 +305,9 @@ export function PrivateSaleForm() {
     if (loanType !== null && currentIsWatercraft !== newIsWatercraft) {
       setFormData(initialFormData);
       setIsUnderFinance(null);
-      setTrailerIncluded(null);
+      setHullIncluded(true);
+      setMotorIncluded(true);
+      setTrailerIncluded(true);
       setHasVendorUpload(false);
       setHasFinancierUpload(false);
       setHasAssetUpload(false);
@@ -346,6 +354,10 @@ export function PrivateSaleForm() {
             loanType={loanType}
             hasUpload={hasAssetUpload}
             onUploadChange={setHasAssetUpload}
+            hullIncluded={hullIncluded}
+            onHullIncludedChange={setHullIncluded}
+            motorIncluded={motorIncluded}
+            onMotorIncludedChange={setMotorIncluded}
             trailerIncluded={trailerIncluded}
             onTrailerIncludedChange={setTrailerIncluded}
             validationErrors={validationErrors}

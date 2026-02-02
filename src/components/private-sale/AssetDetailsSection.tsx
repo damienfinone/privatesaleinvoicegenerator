@@ -267,7 +267,6 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
   // For Commercial/Consumer loans, show simplified vehicle fields
   const renderVehicleFields = () => (
     <div className="space-y-4">
-      <h4 className="font-semibold text-sm text-muted-foreground">Vehicle Details</h4>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="vehicleMake">Make <span className="text-destructive">*</span></Label>
@@ -330,7 +329,6 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
     <>
       {/* Hull Details */}
       <div className="space-y-4">
-        <h4 className="font-semibold text-sm text-muted-foreground">Hull Details</h4>
         <div className="flex items-center gap-4 mb-4">
           <Label>Hull included? <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">
@@ -436,9 +434,11 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         )}
       </div>
 
+      {/* Visual separator */}
+      <div className="border-t border-border" />
+
       {/* Motor Details */}
       <div className="space-y-4">
-        <h4 className="font-semibold text-sm text-muted-foreground">Motor Details</h4>
         <div className="flex items-center gap-4 mb-4">
           <Label>Motor included? <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">
@@ -523,9 +523,11 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         )}
       </div>
 
+      {/* Visual separator */}
+      <div className="border-t border-border" />
+
       {/* Trailer Included Question */}
       <div className="space-y-4">
-        <h4 className="font-semibold text-sm text-muted-foreground">Trailer Details</h4>
         <div className="flex items-center gap-4">
           <Label>Trailer included? <span className="text-destructive">*</span></Label>
           <div className="flex gap-2">

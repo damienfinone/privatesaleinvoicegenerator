@@ -1,62 +1,58 @@
 
+## Current blocker
 
-## Report Extraction Error Feature
+The uploads are not what’s blocking preview/download anymore.
 
-Add a button in the top-right of the form page that opens a dialog allowing users to report incorrect document extractions. The report (with the uploaded document attached as a download link) gets emailed to damien.oliver@financeone.com.au.
+Based on the current code and your screenshot, the likely blocking field is **Registration Expiry** in Asset Details. The form validator only accepts:
+- `DD/MM/YYYY`
+- or `YYYY-MM-DD`
 
-### User Flow
+In your screenshot it appears filled with `RegExpiry`, which is non-empty but not a valid date.
 
-1. User clicks "Report extraction error" button (top-right of the page header)
-2. Dialog opens with:
-   - File upload (PDF or image, same accepted types as existing uploads)
-   - Multiline text input: "What fields were extracted incorrectly?"
-   - Submit button
-3. On submit:
-   - Document is uploaded to a private storage bucket
-   - A signed URL (valid 7 days) is generated
-   - Email is sent to damien.oliver@financeone.com.au with the description and document download link
-   - User sees success toast, dialog closes
+## Why this is not obvious
 
-### Technical Implementation
+The submit logic blocks preview whenever any validator fails, but the UI only shows a red border for some fields when they are empty. For **Registration Expiry**, the code blocks submission for an invalid non-empty value, yet the field styling only turns red when it is blank.
 
-**1. Storage**
-- Create a private storage bucket `extraction-error-reports`
-- RLS: allow public uploads (anyone using the form can submit a report); reads restricted to service role
-- Files stored under `reports/{timestamp}-{filename}`
+So the form can fail with:
+- generic toast: `Required Fields Missing`
+- no clear inline error on the actual blocking field
 
-**2. Email Infrastructure (Lovable Cloud built-in)**
-- Check email domain status — if not configured, prompt the user to set up a sender domain via the email setup dialog (prerequisite)
-- Run `setup_email_infra` to create queues, tables, cron job
-- Run `scaffold_transactional_email` to create the `send-transactional-email` function
-- Create a new template `_shared/transactional-email-templates/extraction-error-report.tsx`:
-  - Subject: "Extraction Error Report - [timestamp]"
-  - Body: shows the description text and a "Download document" button linking to the signed URL
-  - Register in `registry.ts`
-- Note: Damien will be the recipient (not the form submitter), so we pass `recipientEmail: 'damien.oliver@financeone.com.au'` when invoking the function
+That mismatch is why it feels like uploads are still mandatory.
 
-**3. Frontend**
-- New component `src/components/private-sale/ReportExtractionErrorDialog.tsx`:
-  - Trigger button (variant="outline", with a flag/alert icon) placed at the top-right of `Index.tsx` header area
-  - Dialog with file input (using existing `getAcceptString()` and `capture="environment"` for mobile camera support, consistent with other uploads)
-  - Textarea for the field description (zod-validated: non-empty, max 2000 chars)
-  - Submit handler:
-    1. Upload file to storage bucket via `supabase.storage.from('extraction-error-reports').upload(...)`
-    2. Generate signed URL via `createSignedUrl(path, 60 * 60 * 24 * 7)`
-    3. Invoke `send-transactional-email` with template name `extraction-error-report`, recipient `damien.oliver@financeone.com.au`, idempotency key `extraction-error-{uuid}`, and `templateData: { description, documentUrl, fileName }`
-    4. Show success toast, reset form, close dialog
-  - Loading state on submit button; disable while uploading/sending
-- Update `src/pages/Index.tsx` to render the button in the header
+## Implementation plan
 
-### Files to Create / Modify
+1. **Fix invalid-value highlighting**
+   - Update `AssetDetailsSection.tsx` so `Registration Expiry` shows destructive styling when the value is present but invalid, not only when empty.
+   - Add an inline helper message like:
+     - `Enter date as DD/MM/YYYY or YYYY-MM-DD`
 
-- Create: `src/components/private-sale/ReportExtractionErrorDialog.tsx`
-- Modify: `src/pages/Index.tsx` (add button to header)
-- Create: storage bucket migration + RLS policies
-- Create: `supabase/functions/_shared/transactional-email-templates/extraction-error-report.tsx`
-- Modify: `supabase/functions/_shared/transactional-email-templates/registry.ts` (register new template)
-- Deploy: `send-transactional-email` edge function
+2. **Improve submit feedback**
+   - Update `PrivateSaleForm.tsx` so the submit toast is more specific than “Required Fields Missing”.
+   - Show a clearer message such as:
+     - `Please fix the highlighted fields before previewing`
+   - Optionally surface the first blocking field name in the toast.
 
-### Prerequisites Note
+3. **Audit other hidden blockers**
+   - Review other validators where non-empty invalid values can block submission without obvious UI feedback.
+   - Most important candidates:
+     - vehicle registration expiry
+     - watercraft registration expiry if validated elsewhere
+     - any date/format-driven fields that currently only style empties
 
-This feature requires an email sender domain to be configured. If one isn't set up yet, you'll be prompted to set it up first (one-time step) before the email infrastructure can be scaffolded.
+4. **Keep VIN non-blocking**
+   - Preserve the current VIN behavior:
+     - warning only
+     - no preview/download block
 
+## Files to update
+
+- `src/components/private-sale/PrivateSaleForm.tsx`
+- `src/components/private-sale/AssetDetailsSection.tsx`
+
+## Expected result
+
+After this change:
+- missing uploads will stay optional
+- preview/download will only be blocked by real required-field or format issues
+- the exact blocking field will be visually obvious
+- in your shown example, `Registration Expiry` would clearly display as the problem instead of looking like an upload requirement

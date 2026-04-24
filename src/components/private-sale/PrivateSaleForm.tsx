@@ -199,9 +199,7 @@ export function PrivateSaleForm() {
 
     // Validate vendor details if NOT under finance OR if there's remaining balance
     if (!isUnderFinance || needsVendorPayment) {
-      if (!hasVendorUpload) {
-        errors.push('disbursement.vendorUpload');
-      }
+      // upload optional
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.bankAccount;
       if (!accountName) errors.push('disbursement.bankAccount.accountName');
       if (!bsbNumber) errors.push('disbursement.bankAccount.bsbNumber');

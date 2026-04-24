@@ -96,15 +96,8 @@ export function PrivateSaleForm() {
   const validateAssetDetails = (): string[] => {
     const errors: string[] = [];
     const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
-    // For vehicles, require single asset upload; for watercraft, require individual uploads
-    if (!isWatercraft) {
-      if (!hasAssetUpload) errors.push('asset.upload');
-    } else {
-      if (hullIncluded && !hasHullUpload) errors.push('asset.hull.upload');
-      if (motorIncluded && !hasMotorUpload) errors.push('asset.motor.upload');
-      if (trailerIncluded && !hasTrailerUpload) errors.push('asset.trailer.upload');
-    }
-    
+    // Document uploads are optional — no validation enforced.
+
     const { hull, motor } = formData.asset;
     
     // For vehicle loans (commercial/consumer)

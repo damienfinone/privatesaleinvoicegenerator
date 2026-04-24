@@ -614,7 +614,10 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
               </div>
               <div className="space-y-2">
                 <Label htmlFor="trailerVin">VIN <span className="text-destructive">*</span></Label>
-                <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value)} className={cn(hasError('asset.trailer.vin') && !data.trailer.vin.trim() && 'border-destructive')} />
+                <Input id="trailerVin" value={data.trailer.vin} onChange={(e) => handleTrailerChange('vin', e.target.value.toUpperCase())} className={cn(hasError('asset.trailer.vin') && !data.trailer.vin.trim() && 'border-destructive')} />
+                {data.trailer.vin.trim() && !/^[A-Z0-9]{17}$/.test(data.trailer.vin.trim()) && (
+                  <p className="text-xs text-destructive">VIN should be 17 characters, letters A–Z and digits 0–9 only.</p>
+                )}
               </div>
             </div>
           </>

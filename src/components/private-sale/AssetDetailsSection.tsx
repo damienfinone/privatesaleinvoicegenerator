@@ -637,7 +637,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           <Label htmlFor="assetPdf" className="cursor-pointer block">
             <div className={cn(
               "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors",
-              hasError('asset.upload') && !hasUpload ? "border-destructive" : "border-muted-foreground/25"
+              "border-muted-foreground/25"
             )}>
               <div className="flex items-center gap-3">
                 {hasUpload ? (
@@ -648,8 +648,8 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                   <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 )}
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
-                  <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
+                  <p className="text-sm font-medium">Upload Asset Document</p>
+                  <p className="text-xs text-muted-foreground">Optional • PDF or photo • Fields will be auto-populated</p>
                 </div>
               </div>
               <Input

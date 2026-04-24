@@ -96,15 +96,8 @@ export function PrivateSaleForm() {
   const validateAssetDetails = (): string[] => {
     const errors: string[] = [];
     const isWatercraft = loanType === 'boat' || loanType === 'commercial-boat';
-    // For vehicles, require single asset upload; for watercraft, require individual uploads
-    if (!isWatercraft) {
-      if (!hasAssetUpload) errors.push('asset.upload');
-    } else {
-      if (hullIncluded && !hasHullUpload) errors.push('asset.hull.upload');
-      if (motorIncluded && !hasMotorUpload) errors.push('asset.motor.upload');
-      if (trailerIncluded && !hasTrailerUpload) errors.push('asset.trailer.upload');
-    }
-    
+    // Document uploads are optional — no validation enforced.
+
     const { hull, motor } = formData.asset;
     
     // For vehicle loans (commercial/consumer)
@@ -176,11 +169,9 @@ export function PrivateSaleForm() {
     const needsVendorPayment = isUnderFinance && amountPayable > 0 && amountPayable < balance;
 
     // If under finance, validate financier details
+    // If under finance, validate financier details (upload optional)
     if (isUnderFinance) {
-      if (!hasFinancierUpload) {
-        errors.push('disbursement.financierUpload');
-      }
-      
+
       const { amount: bpayAmount, billerCode, referenceNumber } = formData.disbursement.bpay;
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.payoutBank;
       
@@ -208,9 +199,7 @@ export function PrivateSaleForm() {
 
     // Validate vendor details if NOT under finance OR if there's remaining balance
     if (!isUnderFinance || needsVendorPayment) {
-      if (!hasVendorUpload) {
-        errors.push('disbursement.vendorUpload');
-      }
+      // upload optional
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.bankAccount;
       if (!accountName) errors.push('disbursement.bankAccount.accountName');
       if (!bsbNumber) errors.push('disbursement.bankAccount.bsbNumber');

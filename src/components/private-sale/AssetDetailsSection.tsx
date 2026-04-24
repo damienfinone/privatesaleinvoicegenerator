@@ -298,7 +298,8 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
         </div>
         <div className="space-y-2">
           <Label htmlFor="vehicleRegoExpiry">Registration Expiry <span className="text-destructive">*</span></Label>
-          <Input id="vehicleRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} className={cn(hasError('asset.hull.registrationExpiry') && !data.hull.registrationExpiry.trim() && 'border-destructive')} />
+          <Input id="vehicleRegoExpiry" value={data.hull.registrationExpiry} onChange={(e) => handleHullChange('registrationExpiry', e.target.value)} placeholder="DD/MM/YYYY" className={cn(hasError('asset.hull.registrationExpiry') && 'border-destructive')} />
+          <p className="text-xs text-muted-foreground">Enter date as DD/MM/YYYY or YYYY-MM-DD</p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="vehicleVin">Identification Number (VIN) <span className="text-destructive">*</span></Label>

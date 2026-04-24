@@ -229,10 +229,62 @@ export function PrivateSaleForm() {
     
     if (allErrors.length > 0) {
       setValidationErrors(new Set(allErrors));
+
+      const fieldLabels: Record<string, string> = {
+        'buyer.name': "Buyer's Name",
+        'buyer.contactNumber': "Buyer's Contact Number",
+        'buyer.address': "Buyer's Address",
+        'asset.hull.make': 'Asset Make',
+        'asset.hull.model': 'Asset Model',
+        'asset.hull.colour': 'Colour',
+        'asset.hull.buildDate': 'Build Date',
+        'asset.hull.fuelType': 'Fuel Type',
+        'asset.hull.registration': 'Registration',
+        'asset.hull.registrationExpiry': 'Registration Expiry (use DD/MM/YYYY)',
+        'asset.hull.hin': 'VIN / Identification Number',
+        'asset.hull.identificationType': 'Identification Type',
+        'asset.hull.bodyType': 'Body Type',
+        'asset.hull.odometer': 'Odometer Reading',
+        'asset.hull.transmission': 'Transmission',
+        'asset.motor.make': 'Motor Make',
+        'asset.motor.model': 'Motor Model',
+        'asset.motor.buildDate': 'Motor Build Date',
+        'asset.motor.engineNumber': 'Engine Number',
+        'asset.trailer.make': 'Trailer Make',
+        'asset.trailer.model': 'Trailer Model',
+        'asset.trailer.registration': 'Trailer Registration',
+        'asset.trailer.buildDate': 'Trailer Build Date',
+        'asset.trailer.vin': 'Trailer VIN',
+        'invoice.purchasePrice': 'Purchase Price',
+        'disbursement.isUnderFinance': 'Is the asset under finance?',
+        'disbursement.bpay.amount': 'Payout Amount Payable',
+        'disbursement.bpay.billerCode': 'Biller Code',
+        'disbursement.bpay.referenceNumber': 'Reference Number',
+        'disbursement.payoutBank.accountName': 'Financier Account Name',
+        'disbursement.payoutBank.bsbNumber': 'Financier BSB (6 digits)',
+        'disbursement.payoutBank.accountNumber': 'Financier Account Number',
+        'disbursement.payoutBank.bank': 'Financier Bank',
+        'disbursement.bankAccount.accountName': 'Vendor Account Name',
+        'disbursement.bankAccount.bsbNumber': 'Vendor BSB (6 digits)',
+        'disbursement.bankAccount.accountNumber': 'Vendor Account Number',
+        'disbursement.bankAccount.bank': 'Vendor Bank',
+      };
+      const firstLabel = fieldLabels[allErrors[0]] || allErrors[0];
+      const remaining = allErrors.length - 1;
+      const description = remaining > 0
+        ? `Start with: ${firstLabel} (and ${remaining} more highlighted field${remaining === 1 ? '' : 's'}).`
+        : `Please fix: ${firstLabel}.`;
+
       toast({
-        title: 'Required Fields Missing',
-        description: 'Please complete all fields marked with an asterisk (*)',
+        title: 'Please fix the highlighted fields before previewing',
+        description,
         variant: 'destructive',
+      });
+
+      // Scroll the first highlighted field into view for clarity
+      requestAnimationFrame(() => {
+        const el = document.querySelector('.border-destructive') as HTMLElement | null;
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
       return;
     }

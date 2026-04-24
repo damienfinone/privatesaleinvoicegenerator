@@ -304,7 +304,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           <Label htmlFor="vehicleVin">Identification Number (VIN) <span className="text-destructive">*</span></Label>
           <Input id="vehicleVin" value={data.hull.hin} onChange={(e) => handleHullChange('hin', e.target.value.toUpperCase())} placeholder="Vehicle Identification Number" className={cn(hasError('asset.hull.hin') && !data.hull.hin.trim() && 'border-destructive')} />
           {data.hull.hin.trim() && !/^[A-Z0-9]{17}$/.test(data.hull.hin.trim()) && (
-            <p className="text-xs text-amber-600">VIN should be 17 characters, letters A–Z and digits 0–9 only.</p>
+            <p className="text-xs text-destructive">VIN should be 17 characters, letters A–Z and digits 0–9 only.</p>
           )}
         </div>
         <div className="space-y-2">

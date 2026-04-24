@@ -9,8 +9,8 @@ const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend';
 
 interface RequestBody {
   description: string;
-  storagePath: string;
-  fileName: string;
+  storagePath?: string;
+  fileName?: string;
 }
 
 Deno.serve(async (req) => {
@@ -40,24 +40,21 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    if (!storagePath || typeof storagePath !== 'string') {
-      return new Response(JSON.stringify({ error: 'storagePath is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
-    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    let documentUrl: string | null = null;
+    if (storagePath && typeof storagePath === 'string') {
+      const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+      const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { data: signed, error: signError } = await admin.storage
-      .from('extraction-error-reports')
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
-    if (signError || !signed?.signedUrl) {
-      throw new Error(`Failed to create signed URL: ${signError?.message ?? 'unknown'}`);
+      const { data: signed, error: signError } = await admin.storage
+        .from('extraction-error-reports')
+        .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
+      if (signError || !signed?.signedUrl) {
+        throw new Error(`Failed to create signed URL: ${signError?.message ?? 'unknown'}`);
+      }
+      documentUrl = signed.signedUrl;
     }
-    const documentUrl = signed.signedUrl;
 
     const safeDescription = description
       .replace(/&/g, '&amp;')
@@ -70,14 +67,8 @@ Deno.serve(async (req) => {
       .replace(/>/g, '&gt;');
     const timestamp = new Date().toISOString();
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-        <h2 style="color: #111;">Extraction Error Report</h2>
-        <p style="color: #666; font-size: 12px;">Submitted: ${timestamp}</p>
-        <h3 style="color: #111; margin-top: 24px;">Fields extracted incorrectly</h3>
-        <div style="background: #f6f6f6; padding: 16px; border-radius: 6px; color: #222; font-size: 14px; line-height: 1.5;">
-          ${safeDescription}
-        </div>
+    const documentSection = documentUrl
+      ? `
         <h3 style="color: #111; margin-top: 24px;">Document</h3>
         <p style="font-size: 14px; color: #222;">File: ${safeFileName}</p>
         <p>
@@ -88,7 +79,18 @@ Deno.serve(async (req) => {
         </p>
         <p style="color: #888; font-size: 12px; margin-top: 8px;">
           Link is valid for 7 days.
-        </p>
+        </p>`
+      : `<p style="color: #888; font-size: 13px; margin-top: 24px;"><em>No document attached.</em></p>`;
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+        <h2 style="color: #111;">Extraction Error Report</h2>
+        <p style="color: #666; font-size: 12px;">Submitted: ${timestamp}</p>
+        <h3 style="color: #111; margin-top: 24px;">Fields extracted incorrectly</h3>
+        <div style="background: #f6f6f6; padding: 16px; border-radius: 6px; color: #222; font-size: 14px; line-height: 1.5;">
+          ${safeDescription}
+        </div>
+        ${documentSection}
       </div>
     `;
 

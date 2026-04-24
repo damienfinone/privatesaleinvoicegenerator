@@ -169,11 +169,9 @@ export function PrivateSaleForm() {
     const needsVendorPayment = isUnderFinance && amountPayable > 0 && amountPayable < balance;
 
     // If under finance, validate financier details
+    // If under finance, validate financier details (upload optional)
     if (isUnderFinance) {
-      if (!hasFinancierUpload) {
-        errors.push('disbursement.financierUpload');
-      }
-      
+
       const { amount: bpayAmount, billerCode, referenceNumber } = formData.disbursement.bpay;
       const { accountName, bsbNumber, accountNumber, bank } = formData.disbursement.payoutBank;
       

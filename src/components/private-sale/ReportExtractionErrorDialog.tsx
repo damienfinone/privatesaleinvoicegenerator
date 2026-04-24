@@ -61,32 +61,29 @@ export function ReportExtractionErrorDialog() {
       });
       return;
     }
-    if (!file) {
-      toast({
-        title: 'Document required',
-        description: 'Please upload the document that was extracted incorrectly.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const path = `reports/${Date.now()}-${safeName}`;
+      let storagePath: string | undefined;
+      let fileName: string | undefined;
 
-      const { error: uploadError } = await supabase.storage
-        .from('extraction-error-reports')
-        .upload(path, file, { contentType: file.type, upsert: false });
-      if (uploadError) throw uploadError;
+      if (file) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        storagePath = `reports/${Date.now()}-${safeName}`;
+        fileName = file.name;
+
+        const { error: uploadError } = await supabase.storage
+          .from('extraction-error-reports')
+          .upload(storagePath, file, { contentType: file.type, upsert: false });
+        if (uploadError) throw uploadError;
+      }
 
       const { error: fnError } = await supabase.functions.invoke(
         'send-extraction-error-report',
         {
           body: {
             description: parsed.data.description,
-            storagePath: path,
-            fileName: file.name,
+            storagePath,
+            fileName,
           },
         },
       );

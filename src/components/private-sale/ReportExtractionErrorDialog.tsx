@@ -80,19 +80,12 @@ export function ReportExtractionErrorDialog() {
         .upload(path, file, { contentType: file.type, upsert: false });
       if (uploadError) throw uploadError;
 
-      const { data: signed, error: signError } = await supabase.storage
-        .from('extraction-error-reports')
-        .createSignedUrl(path, 60 * 60 * 24 * 7);
-      if (signError || !signed?.signedUrl) {
-        throw signError ?? new Error('Failed to create signed URL');
-      }
-
       const { error: fnError } = await supabase.functions.invoke(
         'send-extraction-error-report',
         {
           body: {
             description: parsed.data.description,
-            documentUrl: signed.signedUrl,
+            storagePath: path,
             fileName: file.name,
           },
         },

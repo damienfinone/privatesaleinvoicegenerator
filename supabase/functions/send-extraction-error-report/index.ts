@@ -1,3 +1,5 @@
+import { createClient } from 'npm:@supabase/supabase-js@2.45.0';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -7,7 +9,7 @@ const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend';
 
 interface RequestBody {
   description: string;
-  documentUrl: string;
+  storagePath: string;
   fileName: string;
 }
 
@@ -24,7 +26,7 @@ Deno.serve(async (req) => {
     if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY is not configured');
 
     const body = (await req.json()) as RequestBody;
-    const { description, documentUrl, fileName } = body;
+    const { description, storagePath, fileName } = body;
 
     if (!description || typeof description !== 'string' || description.trim().length === 0) {
       return new Response(JSON.stringify({ error: 'description is required' }), {
@@ -38,12 +40,24 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    if (!documentUrl || typeof documentUrl !== 'string') {
-      return new Response(JSON.stringify({ error: 'documentUrl is required' }), {
+    if (!storagePath || typeof storagePath !== 'string') {
+      return new Response(JSON.stringify({ error: 'storagePath is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: signed, error: signError } = await admin.storage
+      .from('extraction-error-reports')
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 7);
+    if (signError || !signed?.signedUrl) {
+      throw new Error(`Failed to create signed URL: ${signError?.message ?? 'unknown'}`);
+    }
+    const documentUrl = signed.signedUrl;
 
     const safeDescription = description
       .replace(/&/g, '&amp;')

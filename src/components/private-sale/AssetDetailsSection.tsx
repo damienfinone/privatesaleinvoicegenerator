@@ -365,7 +365,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Label htmlFor="hullPdf" className="cursor-pointer block">
               <div className={cn(
                 "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors mb-4",
-                hasError('asset.hull.upload') && !hasHullUpload ? "border-destructive" : "border-muted-foreground/25"
+                "border-muted-foreground/25"
               )}>
                 <div className="flex items-center gap-3">
                   {hasHullUpload ? (
@@ -376,8 +376,8 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                     <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Upload Hull Document <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
+                    <p className="text-sm font-medium">Upload Hull Document</p>
+                    <p className="text-xs text-muted-foreground">Optional • PDF or photo • Fields will be auto-populated</p>
                   </div>
                 </div>
                 <Input
@@ -475,7 +475,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Label htmlFor="motorPdf" className="cursor-pointer block">
               <div className={cn(
                 "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors mb-4",
-                hasError('asset.motor.upload') && !hasMotorUpload ? "border-destructive" : "border-muted-foreground/25"
+                "border-muted-foreground/25"
               )}>
                 <div className="flex items-center gap-3">
                   {hasMotorUpload ? (
@@ -486,8 +486,8 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                     <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Upload Motor Document <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
+                    <p className="text-sm font-medium">Upload Motor Document</p>
+                    <p className="text-xs text-muted-foreground">Optional • PDF or photo • Fields will be auto-populated</p>
                   </div>
                 </div>
                 <Input
@@ -566,7 +566,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
             <Label htmlFor="trailerPdf" className="cursor-pointer block">
               <div className={cn(
                 "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors mb-4",
-                hasError('asset.trailer.upload') && !hasTrailerUpload ? "border-destructive" : "border-muted-foreground/25"
+                "border-muted-foreground/25"
               )}>
                 <div className="flex items-center gap-3">
                   {hasTrailerUpload ? (
@@ -577,8 +577,8 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                     <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm font-medium">Upload Trailer Document <span className="text-destructive">*</span></p>
-                    <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
+                    <p className="text-sm font-medium">Upload Trailer Document</p>
+                    <p className="text-xs text-muted-foreground">Optional • PDF or photo • Fields will be auto-populated</p>
                   </div>
                 </div>
                 <Input
@@ -637,7 +637,7 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
           <Label htmlFor="assetPdf" className="cursor-pointer block">
             <div className={cn(
               "border-2 border-dashed rounded-lg p-4 hover:border-muted-foreground/50 hover:bg-muted/30 transition-colors",
-              hasError('asset.upload') && !hasUpload ? "border-destructive" : "border-muted-foreground/25"
+              "border-muted-foreground/25"
             )}>
               <div className="flex items-center gap-3">
                 {hasUpload ? (
@@ -648,8 +648,8 @@ export function AssetDetailsSection({ data, onChange, loanType, hasUpload, onUpl
                   <Upload className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 )}
                 <div className="flex-1">
-                  <p className="text-sm font-medium">Upload Asset Document <span className="text-destructive">*</span></p>
-                  <p className="text-xs text-muted-foreground">PDF or photo • Fields will be auto-populated</p>
+                  <p className="text-sm font-medium">Upload Asset Document</p>
+                  <p className="text-xs text-muted-foreground">Optional • PDF or photo • Fields will be auto-populated</p>
                 </div>
               </div>
               <Input

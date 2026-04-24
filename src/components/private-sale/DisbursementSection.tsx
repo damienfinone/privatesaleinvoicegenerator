@@ -341,8 +341,8 @@ export function DisbursementSection({
               option="payoutBank" 
               extractionType="payout_letter_bank" 
               inputId="payoutBankPdf" 
-              title="Upload payout letter from the current financier"
-              showError={hasError('disbursement.financierUpload')}
+              title="Upload payout letter from the current financier (optional)"
+              showError={false}
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -451,8 +451,8 @@ export function DisbursementSection({
               option="bankAccount" 
               extractionType="bank_account" 
               inputId="bankAccountPdf" 
-              title="Upload proof of vendor's nominated bank account"
-              showError={hasError('disbursement.vendorUpload')}
+              title="Upload proof of vendor's nominated bank account (optional)"
+              showError={false}
             />
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

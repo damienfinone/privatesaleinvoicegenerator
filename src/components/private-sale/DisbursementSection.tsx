@@ -161,6 +161,7 @@ export function DisbursementSection({
             accountNumber: extractedData.accountNumber || currentData.payoutBank.accountNumber,
             bank: extractedData.bank || currentData.payoutBank.bank,
             amount: extractedData.payoutAmount || currentData.payoutBank.amount,
+            sellerFullName: extractedData.sellerFullName || currentData.payoutBank.sellerFullName,
           },
           bpay: {
             ...currentData.bpay,

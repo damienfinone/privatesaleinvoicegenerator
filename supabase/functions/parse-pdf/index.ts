@@ -173,13 +173,15 @@ Only return the JSON object, no other text.`;
   "bank": "",
   "billerCode": "",
   "referenceNumber": "",
-  "payoutAmount": ""
+  "payoutAmount": "",
+  "sellerFullName": ""
 }
 Look for:
 - accountName: The name of the lender/financier who issued the payout letter. Usually found in the document header, letterhead, logo area, or footer (e.g., "Macquarie Leasing", "ANZ", "Westpac", "Finance One", etc.)
 - Bank transfer details: BSB, account number
 - BPAY details: biller code (usually 4-6 digits), reference number (customer reference)
 - Payout/settlement amount: the total amount to pay
+- sellerFullName: The full name of the customer/borrower/seller whose loan is being paid out. This is the person selling the asset (NOT the financier). Look for labels like "Customer Name", "Borrower", "Account Holder", "Mortgagor", "Re:", "Loan Account Name", or addressed-to name. Return the full name as written.
 Only return the JSON object, no other text.`;
         break;
       

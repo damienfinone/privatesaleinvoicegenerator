@@ -64,6 +64,7 @@ export interface PayoutBankDetails {
   accountNumber: string;
   bank: string;
   amount: string;
+  sellerFullName: string;
 }
 
 export interface BpayDetails {
@@ -151,6 +152,7 @@ export const initialFormData: PrivateSaleFormData = {
       accountNumber: '',
       bank: '',
       amount: '',
+      sellerFullName: '',
     },
     bpay: {
       accountName: '',

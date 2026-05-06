@@ -421,6 +421,7 @@ export function DisbursementSection({
                   placeholder="0.00"
                   className={cn(hasError('disbursement.bpay.amount') && !data.bpay.amount && 'border-destructive')}
                 />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -433,7 +434,6 @@ export function DisbursementSection({
                   placeholder="As shown on payout letter"
                 />
               </div>
-            </div>
             </div>
 
             {/* Alert when vendor payment is also needed */}

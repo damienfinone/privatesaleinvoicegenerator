@@ -97,7 +97,12 @@ function DisbursementContent({ data, isUnderFinance }: { data: PrivateSaleFormDa
       {/* Financier payment - when under finance */}
       {isUnderFinance && (
         <>
-          <div className="font-semibold text-xs mt-2 mb-1">Payee: Financier</div>
+          <div className="font-semibold text-xs mt-2 mb-1">
+            Payee: Financier
+            {data.disbursement.payoutBank.sellerFullName && (
+              <span className="font-normal"> (Seller: {data.disbursement.payoutBank.sellerFullName})</span>
+            )}
+          </div>
           
           {/* BPAY details */}
           {hasBpayDetails && (

@@ -421,7 +421,19 @@ export function DisbursementSection({
                   placeholder="0.00"
                   className={cn(hasError('disbursement.bpay.amount') && !data.bpay.amount && 'border-destructive')}
                 />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pb_sellerFullName">Seller's Full Name</Label>
+                <Input
+                  id="pb_sellerFullName"
+                  value={data.payoutBank.sellerFullName}
+                  onChange={(e) => handlePayoutBankChange('sellerFullName' as any, e.target.value)}
+                  placeholder="As shown on payout letter"
+                />
               </div>
+            </div>
             </div>
 
             {/* Alert when vendor payment is also needed */}

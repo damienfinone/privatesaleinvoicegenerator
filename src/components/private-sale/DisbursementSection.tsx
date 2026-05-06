@@ -41,6 +41,24 @@ const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(value);
 };
 
+// Fuzzy name comparison: normalize and compute similarity
+const normalizeName = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\b(mr|mrs|ms|miss|dr|pty|ltd|limited|the)\b/g, '').replace(/\s+/g, ' ').trim();
+
+const namesFuzzyMatch = (a: string, b: string): boolean => {
+  const na = normalizeName(a);
+  const nb = normalizeName(b);
+  if (!na || !nb) return true;
+  if (na === nb) return true;
+  const ta = new Set(na.split(' ').filter(Boolean));
+  const tb = new Set(nb.split(' ').filter(Boolean));
+  if (ta.size === 0 || tb.size === 0) return true;
+  let overlap = 0;
+  ta.forEach((t) => { if (tb.has(t)) overlap++; });
+  const ratio = overlap / Math.min(ta.size, tb.size);
+  return ratio >= 0.5;
+};
+
 export function DisbursementSection({ 
   data, 
   onChange, 
@@ -161,6 +179,7 @@ export function DisbursementSection({
             accountNumber: extractedData.accountNumber || currentData.payoutBank.accountNumber,
             bank: extractedData.bank || currentData.payoutBank.bank,
             amount: extractedData.payoutAmount || currentData.payoutBank.amount,
+            sellerFullName: extractedData.sellerFullName || currentData.payoutBank.sellerFullName,
           },
           bpay: {
             ...currentData.bpay,
@@ -423,6 +442,18 @@ export function DisbursementSection({
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="pb_sellerFullName">Seller's Full Name</Label>
+                <Input
+                  id="pb_sellerFullName"
+                  value={data.payoutBank.sellerFullName}
+                  onChange={(e) => handlePayoutBankChange('sellerFullName' as any, e.target.value)}
+                  placeholder="As shown on payout letter"
+                />
+              </div>
+            </div>
+
             {/* Alert when vendor payment is also needed */}
             {needsVendorPayment && (
               <Alert className="bg-amber-50 border-amber-300 text-amber-900">
@@ -503,6 +534,19 @@ export function DisbursementSection({
             </div>
           </div>
         )}
+
+        {/* Fuzzy name match warning - informational only */}
+        {(isUnderFinance === false || needsVendorPayment) &&
+          data.payoutBank.sellerFullName.trim() &&
+          data.bankAccount.accountName.trim() &&
+          !namesFuzzyMatch(data.payoutBank.sellerFullName, data.bankAccount.accountName) && (
+            <Alert className="bg-amber-50 border-amber-300">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <span className="font-medium">Name mismatch:</span> Seller's Full Name (“{data.payoutBank.sellerFullName}”) does not appear to match the Vendor Account Name (“{data.bankAccount.accountName}”). Please verify before submitting. This is informational only and will not block submission.
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
 
       {/* Payment Method Selection Dialog */}

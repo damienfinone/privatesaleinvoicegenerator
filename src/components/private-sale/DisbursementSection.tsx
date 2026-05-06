@@ -534,6 +534,19 @@ export function DisbursementSection({
             </div>
           </div>
         )}
+
+        {/* Fuzzy name match warning - informational only */}
+        {(isUnderFinance === false || needsVendorPayment) &&
+          data.payoutBank.sellerFullName.trim() &&
+          data.bankAccount.accountName.trim() &&
+          !namesFuzzyMatch(data.payoutBank.sellerFullName, data.bankAccount.accountName) && (
+            <Alert className="bg-amber-50 border-amber-300">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <span className="font-medium">Name mismatch:</span> Seller's Full Name (“{data.payoutBank.sellerFullName}”) does not appear to match the Vendor Account Name (“{data.bankAccount.accountName}”). Please verify before submitting. This is informational only and will not block submission.
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
 
       {/* Payment Method Selection Dialog */}

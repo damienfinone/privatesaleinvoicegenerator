@@ -109,6 +109,7 @@ function DisbursementContent({ data, isUnderFinance }: { data: PrivateSaleFormDa
             <>
               <div className="text-xs mb-1">Payment Method: BPAY</div>
               <div className="grid grid-cols-2 gap-x-4">
+                <Field label="Financier Name" value={data.disbursement.payoutBank.accountName} />
                 <Field label="Biller Code" value={data.disbursement.bpay.billerCode} />
                 <Field label="Reference Number" value={data.disbursement.bpay.referenceNumber} />
               </div>

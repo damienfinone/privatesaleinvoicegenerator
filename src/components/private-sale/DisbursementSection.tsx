@@ -41,6 +41,24 @@ const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD' }).format(value);
 };
 
+// Fuzzy name comparison: normalize and compute similarity
+const normalizeName = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\b(mr|mrs|ms|miss|dr|pty|ltd|limited|the)\b/g, '').replace(/\s+/g, ' ').trim();
+
+const namesFuzzyMatch = (a: string, b: string): boolean => {
+  const na = normalizeName(a);
+  const nb = normalizeName(b);
+  if (!na || !nb) return true;
+  if (na === nb) return true;
+  const ta = new Set(na.split(' ').filter(Boolean));
+  const tb = new Set(nb.split(' ').filter(Boolean));
+  if (ta.size === 0 || tb.size === 0) return true;
+  let overlap = 0;
+  ta.forEach((t) => { if (tb.has(t)) overlap++; });
+  const ratio = overlap / Math.min(ta.size, tb.size);
+  return ratio >= 0.5;
+};
+
 export function DisbursementSection({ 
   data, 
   onChange, 

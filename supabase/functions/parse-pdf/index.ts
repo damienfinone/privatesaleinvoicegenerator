@@ -13,7 +13,7 @@ serve(async (req) => {
 
   try {
     const { pdfBase64, fileBase64, mimeType, extractionType } = await req.json();
-    
+
     // Support both old pdfBase64 param and new fileBase64 param
     const base64Data = fileBase64 || pdfBase64;
     const contentType = mimeType || 'application/pdf';
@@ -25,17 +25,17 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('LOVABLE_API_KEY');
+    const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) {
-      console.error('LOVABLE_API_KEY not configured');
+      console.error('GEMINI_API_KEY not configured');
       return new Response(
-        JSON.stringify({ success: false, error: 'AI gateway not configured' }),
+        JSON.stringify({ success: false, error: 'Gemini API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     let extractionPrompt = '';
-    
+
     switch (extractionType) {
       case 'asset_details':
         extractionPrompt = `Analyze this PDF document and extract asset/vehicle/watercraft details. Return a JSON object with these fields (use empty string if not found):
@@ -78,7 +78,7 @@ Field mapping hints:
 
 Only return the JSON object, no other text.`;
         break;
-      
+
       case 'hull_details':
         extractionPrompt = `Analyze this boat/ship registration PDF document and extract hull details. Return a JSON object with these fields (use empty string if not found):
 {
@@ -108,7 +108,7 @@ Field mapping hints for Queensland boat registration documents:
 
 Only return the JSON object, no other text.`;
         break;
-      
+
       case 'trailer_details':
         extractionPrompt = `Analyze this trailer registration PDF document and extract trailer details. Return a JSON object with these fields (use empty string if not found):
 {
@@ -132,7 +132,7 @@ Field mapping hints for Queensland trailer registration documents:
 
 Only return the JSON object, no other text.`;
         break;
-      
+
       case 'motor_details':
         extractionPrompt = `Analyze this image/document of a boat motor serial plate or registration. Extract motor/engine details. Return a JSON object with these fields (use empty string if not found):
 {
@@ -152,7 +152,7 @@ Field mapping hints for motor serial plates:
 
 Only return the JSON object, no other text.`;
         break;
-      
+
       case 'bank_account':
         extractionPrompt = `Analyze this PDF document which contains proof of a bank account. Extract the banking details. Return a JSON object with these fields (use empty string if not found):
 {
@@ -163,7 +163,7 @@ Only return the JSON object, no other text.`;
 }
 Only return the JSON object, no other text.`;
         break;
-      
+
       case 'payout_letter_bank':
         extractionPrompt = `Analyze this PDF document which is a payout letter from a financier. Extract ALL payment details - the letter may contain bank transfer details, BPAY details, or both. Return a JSON object with these fields (use empty string if not found):
 {
@@ -184,7 +184,7 @@ Look for:
 - sellerFullName: The full name of the customer/borrower/seller whose loan is being paid out. This is the person selling the asset (NOT the financier). Look for labels like "Customer Name", "Borrower", "Account Holder", "Mortgagor", "Re:", "Loan Account Name", or addressed-to name. Return the full name as written.
 Only return the JSON object, no other text.`;
         break;
-      
+
       case 'payout_letter_bpay':
         extractionPrompt = `Analyze this PDF document which is a payout letter with BPAY details. Extract the BPAY information. Return a JSON object with these fields (use empty string if not found):
 {
@@ -196,7 +196,7 @@ Only return the JSON object, no other text.`;
 }
 Only return the JSON object, no other text.`;
         break;
-      
+
       default:
         return new Response(
           JSON.stringify({ success: false, error: 'Invalid extraction type' }),
@@ -206,38 +206,41 @@ Only return the JSON object, no other text.`;
 
     console.log(`Processing document for extraction type: ${extractionType}, contentType: ${contentType}`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: extractionPrompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:${contentType};base64,${base64Data}`
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 2000,
-      }),
-    });
+    // Call Google's native Generative Language API directly with the customer's own key.
+    // Data flows under the customer's Google business agreement; no Lovable infrastructure
+    // touches the document payload.
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { text: extractionPrompt },
+                {
+                  inline_data: {
+                    mime_type: contentType,
+                    data: base64Data,
+                  },
+                },
+              ],
+            },
+          ],
+          generationConfig: {
+            maxOutputTokens: 2000,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI Gateway error:', errorText);
+      console.error('Gemini API error:', response.status, errorText);
       return new Response(
         JSON.stringify({ success: false, error: `AI processing failed: ${response.status}` }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -245,8 +248,11 @@ Only return the JSON object, no other text.`;
     }
 
     const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content || '';
-    
+    const content: string =
+      aiResponse?.candidates?.[0]?.content?.parts
+        ?.map((p: { text?: string }) => p?.text ?? '')
+        .join('') || '';
+
     console.log('AI Response:', content);
 
     // Parse the JSON from the response
@@ -254,9 +260,9 @@ Only return the JSON object, no other text.`;
     try {
       // Try to extract JSON from the response (handle markdown code blocks)
       const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
-      const jsonStr = jsonMatch[1].trim();
+      const jsonStr = (jsonMatch[1] || '').trim();
       extractedData = JSON.parse(jsonStr);
-      
+
       // Normalize BSB number: remove spaces and hyphens, keep only digits
       if (extractedData.bsbNumber) {
         extractedData.bsbNumber = extractedData.bsbNumber.replace(/[\s\-]/g, '');

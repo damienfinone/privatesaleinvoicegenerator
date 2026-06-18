@@ -1,58 +1,49 @@
+## Goal
 
-## Current blocker
+Route all document-extraction AI calls through **your** Google Gemini API key (under your business contract) and remove the Lovable AI Gateway path entirely. No fallback.
 
-The uploads are not what’s blocking preview/download anymore.
+## Scope
 
-Based on the current code and your screenshot, the likely blocking field is **Registration Expiry** in Asset Details. The form validator only accepts:
-- `DD/MM/YYYY`
-- or `YYYY-MM-DD`
+Only the `parse-pdf` edge function uses an LLM. No other AI calls exist in the project.
 
-In your screenshot it appears filled with `RegExpiry`, which is non-empty but not a valid date.
+## Changes
 
-## Why this is not obvious
+### 1. Add your Gemini API key as a secret
+- Request a new secret `GEMINI_API_KEY` (you paste it in a secure form; not stored in code).
+- Source: Google AI Studio (https://aistudio.google.com/apikey) using your business GCP project — ensure the project has billing enabled so the paid tier applies (paid tier = data not used for training per Google's API terms).
 
-The submit logic blocks preview whenever any validator fails, but the UI only shows a red border for some fields when they are empty. For **Registration Expiry**, the code blocks submission for an invalid non-empty value, yet the field styling only turns red when it is blank.
+### 2. Rewrite `supabase/functions/parse-pdf/index.ts`
+- Replace the call to `https://ai.gateway.lovable.dev/v1/chat/completions` (OpenAI-compatible shape) with a direct call to Google's native Generative Language API:
+  - Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`
+  - Request body uses Google's native `contents`/`parts` shape with `inline_data` for the base64 file (instead of OpenAI's `image_url`).
+- Read key from `Deno.env.get('GEMINI_API_KEY')`. If missing → return a clear 500 error: "Gemini API key not configured" (no silent fallback).
+- Remove all references to `LOVABLE_API_KEY` in this function.
+- Keep all existing extraction prompts and field schemas unchanged.
+- Keep BSB normalization and JSON parsing logic unchanged.
 
-So the form can fail with:
-- generic toast: `Required Fields Missing`
-- no clear inline error on the actual blocking field
+### 3. Leave `LOVABLE_API_KEY` alone
+- It's auto-managed by Lovable and used by the platform itself. It's no longer called by your app code after this change, but no need to delete it.
 
-That mismatch is why it feels like uploads are still mandatory.
+## What does NOT change
 
-## Implementation plan
+- Frontend (`pdfParser.ts`, all form components, preview/PDF).
+- Field mappings, extraction prompts, model behavior (still Gemini 2.5 Flash, just under your contract).
+- Edge function signature — same `{ fileBase64, mimeType, extractionType }` input, same `{ success, data }` output.
 
-1. **Fix invalid-value highlighting**
-   - Update `AssetDetailsSection.tsx` so `Registration Expiry` shows destructive styling when the value is present but invalid, not only when empty.
-   - Add an inline helper message like:
-     - `Enter date as DD/MM/YYYY or YYYY-MM-DD`
+## Data-flow after change
 
-2. **Improve submit feedback**
-   - Update `PrivateSaleForm.tsx` so the submit toast is more specific than “Required Fields Missing”.
-   - Show a clearer message such as:
-     - `Please fix the highlighted fields before previewing`
-   - Optionally surface the first blocking field name in the toast.
+```
+Browser → Supabase Edge Function (parse-pdf) → Google Generative Language API (your key, your GCP project)
+```
 
-3. **Audit other hidden blockers**
-   - Review other validators where non-empty invalid values can block submission without obvious UI feedback.
-   - Most important candidates:
-     - vehicle registration expiry
-     - watercraft registration expiry if validated elsewhere
-     - any date/format-driven fields that currently only style empties
+No Lovable infrastructure touches the document payload.
 
-4. **Keep VIN non-blocking**
-   - Preserve the current VIN behavior:
-     - warning only
-     - no preview/download block
+## Verification
 
-## Files to update
+After deploy, upload one test document of each type (payout letter, rego paper, bank statement) and confirm extraction still populates the form correctly. Check edge function logs for any auth (401/403) errors from Google.
 
-- `src/components/private-sale/PrivateSaleForm.tsx`
-- `src/components/private-sale/AssetDetailsSection.tsx`
+## Notes on Google's terms
 
-## Expected result
-
-After this change:
-- missing uploads will stay optional
-- preview/download will only be blocked by real required-field or format issues
-- the exact blocking field will be visually obvious
-- in your shown example, `Registration Expiry` would clearly display as the problem instead of looking like an upload requirement
+- **Paid tier** (billing enabled on your GCP project): prompts/responses are NOT used to train Google models, per https://ai.google.dev/gemini-api/terms.
+- **Free tier**: data MAY be used for product improvement. Make sure billing is enabled on the GCP project tied to your API key.
+- For stricter guarantees (DPA, zero retention, regional data residency), use Vertex AI instead of the Gemini API — that's a larger change; let me know if you need it and I'll plan it separately.

@@ -270,9 +270,15 @@ Only return the JSON object, no other text.`;
     // Parse the JSON from the response
     let extractedData;
     try {
-      // Try to extract JSON from the response (handle markdown code blocks)
-      const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content];
-      const jsonStr = (jsonMatch[1] || '').trim();
+      // Strip markdown code fences (handles unclosed fences too)
+      let jsonStr = content.trim();
+      jsonStr = jsonStr.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+      // Fall back to first { ... last } if extra prose surrounds the JSON
+      const firstBrace = jsonStr.indexOf('{');
+      const lastBrace = jsonStr.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace > firstBrace) {
+        jsonStr = jsonStr.slice(firstBrace, lastBrace + 1);
+      }
       extractedData = JSON.parse(jsonStr);
 
       // Normalize BSB number: remove spaces and hyphens, keep only digits

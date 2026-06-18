@@ -34,6 +34,14 @@ serve(async (req) => {
       );
     }
 
+    if (!apiKey.trim().startsWith('AIza')) {
+      console.error('GEMINI_API_KEY is not a Google API key. Expected an AI Studio/API key value, not an OAuth access token or service account credential.');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Gemini API key is invalid. Use a Google AI Studio API key that starts with AIza.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     let extractionPrompt = '';
 
     switch (extractionType) {
@@ -242,8 +250,11 @@ Only return the JSON object, no other text.`;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Gemini API error:', response.status, errorText);
+      const userError = response.status === 401 || response.status === 403
+        ? 'Gemini authentication failed. Check that GEMINI_API_KEY is a Google AI Studio API key, the Generative Language API is enabled, billing is enabled, and API restrictions allow generativelanguage.googleapis.com.'
+        : `AI processing failed: ${response.status}`;
       return new Response(
-        JSON.stringify({ success: false, error: `AI processing failed: ${response.status}` }),
+        JSON.stringify({ success: false, error: userError }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
